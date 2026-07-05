@@ -1,0 +1,31 @@
+package com.example.data
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface TransactionDao {
+    @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
+    fun getAllTransactions(): Flow<List<TransactionEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTransaction(transaction: TransactionEntity): Long
+
+    @Query("UPDATE transactions SET syncStatus = 'Synced' WHERE syncStatus = 'Pending'")
+    suspend fun syncPendingTransactions()
+
+    @Query("SELECT * FROM transactions WHERE syncStatus = 'Pending'")
+    suspend fun getPendingTransactions(): List<TransactionEntity>
+
+    @Query("SELECT MAX(nonce) FROM transactions")
+    suspend fun getLatestNonce(): Int?
+
+    @Query("SELECT * FROM transactions WHERE nonce = :nonce LIMIT 1")
+    suspend fun getTransactionByNonce(nonce: Int): TransactionEntity?
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAllTransactions()
+}
