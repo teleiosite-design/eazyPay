@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import android.nfc.NfcAdapter
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
+import com.eazypay.app.BuildConfig
 import com.example.ui.EazyPayViewModel
 import com.example.ui.screens.*
 import com.example.ui.theme.MyApplicationTheme
@@ -72,7 +73,7 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
     var currentName by remember { mutableStateOf("") }
     var currentPhone by remember { mutableStateOf("") }
     var currentPassword by remember { mutableStateOf("") }
-    val defaultRole = if (com.example.BuildConfig.FLAVOR == "merchant") "vendor" else "customer"
+    val defaultRole = if (BuildConfig.FLAVOR == "merchant") "vendor" else "customer"
     var chosenRole by remember { mutableStateOf(defaultRole) }
 
     NavHost(
@@ -84,15 +85,19 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
             SplashScreen(
                 onNavigate = {
                     if (viewModel.isRegistered.value) {
-                        val role = if (com.example.BuildConfig.FLAVOR == "merchant") {
+                        val role = if (BuildConfig.FLAVOR == "merchant") {
                             "vendor"
-                        } else if (com.example.BuildConfig.FLAVOR == "customer") {
+                        } else if (BuildConfig.FLAVOR == "customer") {
                             "customer"
                         } else {
                             viewModel.currentRole.value
                         }
                         if (role == "customer") {
                             navController.navigate("customer_main") {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        } else if (role == "student") {
+                            navController.navigate("student_main") {
                                 popUpTo("splash") { inclusive = true }
                             }
                         } else {
@@ -126,9 +131,9 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
                 isLoading = isLoading,
                 errorMessage = errorMessage,
                 onContinue = { name, phone, password, role ->
-                    val forcedRole = if (com.example.BuildConfig.FLAVOR == "customer") {
+                    val forcedRole = if (BuildConfig.FLAVOR == "customer") {
                         "customer"
-                    } else if (com.example.BuildConfig.FLAVOR == "merchant") {
+                    } else if (BuildConfig.FLAVOR == "merchant") {
                         "vendor"
                     } else {
                         role
@@ -141,6 +146,26 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
                     viewModel.registerUserOnline(name, phone, password, forcedRole) {
                         viewModel.sendOtpOnline(phone, forcedRole) {
                             navController.navigate("otp")
+                        }
+                    }
+                },
+                onWatchDemo = {
+                    navController.navigate("demo_split_screen")
+                },
+                onQuickLogin = { role ->
+                    currentPhone = if (role == "student" || role == "customer") "8012345678" else "8011112222"
+                    chosenRole = role
+                    viewModel.setRole(role)
+                    viewModel.setPin("1234")
+                    viewModel.setRegistered(true, currentPhone, role)
+                    if (role == "student" || role == "customer") {
+                        val route = if (role == "customer") "customer_main" else "student_main"
+                        navController.navigate(route) {
+                            popUpTo("register") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("vendor_main") {
+                            popUpTo("register") { inclusive = true }
                         }
                     }
                 }
@@ -174,6 +199,10 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
                             navController.navigate("customer_main") {
                                 popUpTo("register") { inclusive = true }
                             }
+                        } else if (chosenRole == "student") {
+                            navController.navigate("student_main") {
+                                popUpTo("register") { inclusive = true }
+                            }
                         } else {
                             navController.navigate("vendor_main") {
                                 popUpTo("register") { inclusive = true }
@@ -195,6 +224,19 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
                 }
             )
         }
+
+        // student_main redirects to customer_main (StudentScreens consolidated into CustomerScreens)
+        composable("student_main") {
+            CustomerMainScreen(
+                viewModel = viewModel,
+                onSignOut = {
+                    viewModel.setRegistered(false)
+                    navController.navigate("register") {
+                        popUpTo("customer_main") { inclusive = true }
+                    }
+                }
+            )
+        }
         
         composable("vendor_main") {
             VendorMainScreen(
@@ -204,6 +246,14 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
                     navController.navigate("register") {
                         popUpTo("vendor_main") { inclusive = true }
                     }
+                }
+            )
+        }
+        composable("demo_split_screen") {
+            DemoSplitScreen(
+                viewModel = viewModel,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

@@ -655,7 +655,7 @@ fun CustomerHomeScreen(
                                     text = "Ready for NFC Tap",
                                     color = Success,
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Normal
                                 )
                             }
 
@@ -1970,7 +1970,7 @@ fun NfcCardsModal(
                                         Icon(Icons.Default.Contactless, contentDescription = "Card", tint = PrimaryTeal, modifier = Modifier.size(20.dp))
                                         Column {
                                             Text(card, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                            Text("Active • Secure Link", color = Success, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                                            Text("Active • Secure Link", color = Success, fontSize = 11.sp, fontWeight = FontWeight.Normal)
                                         }
                                     }
                                     IconButton(
@@ -2254,7 +2254,7 @@ fun ChangePinModal(
                                 .border(1.dp, Danger, RoundedCornerShape(12.dp))
                                 .padding(12.dp)
                         ) {
-                            Text(errorMessage, color = Danger, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            Text(errorMessage, color = Danger, fontSize = 13.sp, fontWeight = FontWeight.Normal)
                         }
                     }
 
@@ -3183,5 +3183,199 @@ fun P2PTransferModal(
                 }
             }
         }
+    }
+}
+
+
+@Composable
+fun LedgerSecurityAuditModal(
+    viewModel: EazyPayViewModel,
+    onDismiss: () -> Unit
+) {
+    val isSecure by viewModel.isLedgerSecure.collectAsState()
+    val offlineSpent by viewModel.offlineSpent.collectAsState()
+    val transactions by viewModel.transactions.collectAsState()
+    val devicePubKey = viewModel.getDevicePublicKeyBase64()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.8f))
+            .clickable { onDismiss() },
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Background),
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .clickable(enabled = false) {}
+                .border(1.dp, Border, RoundedCornerShape(24.dp)),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Ledger Security Audit", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextSecondary)
+                    }
+                }
+
+                // Security Status Box
+                val cardColor = if (isSecure) Success.copy(alpha = 0.1f) else Danger.copy(alpha = 0.1f)
+                val borderColor = if (isSecure) Success else Danger
+                val statusText = if (isSecure) "LEDGER INTEGRITY VERIFIED" else "LEDGER COMPROMISED"
+                val statusDesc = if (isSecure) {
+                    "All Room transaction records, block chain continuation checks, and cryptographic signatures (ECDSA-SHA256) match physical device keys perfectly."
+                } else {
+                    "Warning: A transaction record payload was altered directly in SQLite, causing hash-continuation check to fail. Wallet balances and tap-payments are locked."
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(cardColor, RoundedCornerShape(16.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isSecure) Icons.Default.Shield else Icons.Default.Warning,
+                        contentDescription = "Status Icon",
+                        tint = borderColor,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = statusText,
+                        color = borderColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = statusDesc,
+                        color = TextSecondary,
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Diagnostics Details Section
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("SECURITY SCHEMAS & METRICS", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+
+                    // Detail items
+                    AuditMetricRow("Cumulative Offline Spent", "₦${String.format("%.2f", offlineSpent)} / ₦5,000.00 Max")
+                    AuditMetricRow("Database Block Count", "${transactions.size} records")
+                    AuditMetricRow("Block Signature Standard", "ECDSA secp256k1 (SHA256)")
+                }
+
+                // Public Key block
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text("DEVICE HARDWARE PUBLIC KEY", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Surface, RoundedCornerShape(8.dp))
+                            .border(1.dp, Border, RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = devicePubKey,
+                            color = PrimaryTeal,
+                            fontSize = 9.sp,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            maxLines = 3
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = Border)
+
+                // Simulation Controls Header
+                Text(
+                    text = "ATTACK & RECOVERY SIMULATION",
+                    color = TextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // Attack Button
+                    Button(
+                        onClick = { viewModel.tamperLastTransaction() },
+                        modifier = Modifier.weight(1f).height(46.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Danger.copy(alpha = 0.2f), contentColor = Danger),
+                        border = BorderStroke(1.dp, Danger.copy(alpha = 0.4f))
+                    ) {
+                        Icon(Icons.Default.BugReport, contentDescription = "Attack", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Tamper DB", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    // Repair Button
+                    Button(
+                        onClick = { viewModel.repairLedgerIntegrity() },
+                        modifier = Modifier.weight(1f).height(46.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Success.copy(alpha = 0.2f), contentColor = Success),
+                        border = BorderStroke(1.dp, Success.copy(alpha = 0.4f))
+                    ) {
+                        Icon(Icons.Default.Build, contentDescription = "Repair", modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Repair Chain", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal)
+                ) {
+                    Text("Close Panel", color = Background, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AuditMetricRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Surface, RoundedCornerShape(8.dp))
+            .border(1.dp, Border, RoundedCornerShape(8.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, color = TextSecondary, fontSize = 12.sp)
+        Text(value, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }

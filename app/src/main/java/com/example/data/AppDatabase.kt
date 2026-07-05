@@ -38,6 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = builder
                     .fallbackToDestructiveMigration()
                     .build()
+                
                 INSTANCE = instance
                 instance
             }

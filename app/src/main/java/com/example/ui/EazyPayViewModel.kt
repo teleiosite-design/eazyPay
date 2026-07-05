@@ -30,6 +30,7 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
     val isOffline = repository.isOffline
     val isSyncing = repository.isSyncing
     val customer = repository.customer
+    val student = repository.student
     val vendor = repository.vendor
     val userPin = repository.userPin
     val offers = repository.offers
@@ -43,6 +44,23 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
         initialValue = emptyList()
     )
 
+    private val _isLedgerSecure = MutableStateFlow(true)
+    val isLedgerSecure: StateFlow<Boolean> = _isLedgerSecure
+
+    private val _offlineSpent = MutableStateFlow(0.0)
+    val offlineSpent: StateFlow<Double> = _offlineSpent
+
+    private val _terminalError = MutableStateFlow<String?>(null)
+    val terminalError: StateFlow<String?> = _terminalError
+
+    init {
+        viewModelScope.launch {
+            transactions.collect {
+                _isLedgerSecure.value = repository.verifyLocalLedgerIntegrity()
+                _offlineSpent.value = repository.getOfflineSpentCumulative()
+            }
+        }
+    }
     // Interactive Demo / Payment States
     private val _demoActive = MutableStateFlow(false)
     val demoActive: StateFlow<Boolean> = _demoActive
@@ -60,6 +78,9 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
 
     private val _terminalCustomer = MutableStateFlow<CustomerUser?>(null)
     val terminalCustomer: StateFlow<CustomerUser?> = _terminalCustomer
+    
+    private val _terminalStudent = MutableStateFlow<StudentUser?>(null)
+    val terminalStudent: StateFlow<StudentUser?> = _terminalStudent
 
     private val _terminalCardPublicKey = MutableStateFlow("")
     val terminalCardPublicKey: StateFlow<String> = _terminalCardPublicKey
@@ -113,6 +134,14 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
         repository.updateCustomerDetails(name, email, phone, department, level)
     }
 
+    fun updateStudentDetails(name: String, email: String, phone: String, department: String, level: String) {
+        repository.updateStudentDetails(name, email, phone, department, level)
+    }
+
+    fun updateVendorBankDetails(bankName: String, accountNumber: String) {
+        repository.updateVendorBankDetails(bankName, accountNumber)
+    }
+
     fun toggleOffline() {
         viewModelScope.launch {
             val nextOffline = !isOffline.value
@@ -136,6 +165,7 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun verifyPin(pin: String): Boolean = repository.verifyPin(pin)
     fun appendPinChar(char: Char, onPinComplete: () -> Unit) {
         if (_isLockedOut.value) return
         if (_pinBuffer.value.length < 4) {
@@ -170,7 +200,7 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
             delay(800)
             val reply = when {
                 msg.contains("card", ignoreCase = true) || msg.contains("sticker", ignoreCase = true) -> 
-                    "You can link your EazyPay NFC card or sticker instantly at the Babcock IT Support booth or via any registered Customer Union Agent device."
+                    "You can link your EazyPay NFC card or sticker instantly at the Babcock IT Support booth or via any registered Customer/Student Union Agent device."
                 msg.contains("charge", ignoreCase = true) || msg.contains("withdraw", ignoreCase = true) -> 
                     "Withdrawals are settled directly to your linked bank account (e.g. GTBank) within 24 hours. Contact our finance line if you experience any delay."
                 msg.contains("offline", ignoreCase = true) -> 
@@ -186,7 +216,7 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
 
     private fun verifyPinAndExecute(onPinComplete: () -> Unit) {
         viewModelScope.launch {
-            if (_pinBuffer.value == userPin.value) {
+            if (_pinBuffer.value == userPin.value || repository.verifyPin(_pinBuffer.value)) {
                 _pinError.value = false
                 _pinAttemptsRemaining.value = 3 // reset attempts
                 onPinComplete()
@@ -213,12 +243,14 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _terminalState.value = 2 // Card Detected
             _terminalCustomer.value = customer.value
+            _terminalStudent.value = student.value
         }
     }
 
     fun resetTerminal() {
         _terminalState.value = 1
         _pinBuffer.value = ""
+        _terminalError.value = null
     }
 
     fun chargeCustomerFromTerminal(onComplete: () -> Unit) {
@@ -228,9 +260,35 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun chargeStudentFromTerminal(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            _terminalState.value = 3 // Waiting for PIN
+            // This is where student enters PIN
+        }
+    }
+
     fun completeTerminalPayment() {
         viewModelScope.launch {
             val amount = _terminalAmount.value.toDoubleOrNull() ?: 200.0
+            // 1. Offline Cumulative Limit Check
+            if (isOffline.value) {
+                val currentOfflineSpent = repository.getOfflineSpentCumulative()
+                val ceiling = repository.getOfflineSpendCeiling()
+                if (currentOfflineSpent + amount > ceiling) {
+                    _terminalError.value = "Offline limit exceeded (Max ₦5,000). Reconnect to sync."
+                    return@launch
+                }
+            }
+            
+            // 2. Cryptographic Ledger Security Check
+            val isSecure = repository.verifyLocalLedgerIntegrity()
+            if (!isSecure) {
+                _terminalError.value = "Security Error: Local ledger compromised. Terminal locked."
+                return@launch
+            }
+            
+            _terminalError.value = null
+
             val targetCustomer = _terminalCustomer.value ?: customer.value
             val nonce = (100000..999999).random()
             
@@ -258,14 +316,27 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun tamperLastTransaction() {
+        viewModelScope.launch {
+            repository.tamperLastTransaction()
+            _isLedgerSecure.value = repository.verifyLocalLedgerIntegrity()
+            _offlineSpent.value = repository.getOfflineSpentCumulative()
+        }
+    }
+
+    fun repairLedgerIntegrity() {
+        viewModelScope.launch {
+            repository.repairLedgerIntegrity()
+            _isLedgerSecure.value = repository.verifyLocalLedgerIntegrity()
+            _offlineSpent.value = repository.getOfflineSpentCumulative()
+        }
+    }
     fun withdrawFunds(amount: Double, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             val success = repository.triggerWithdrawal(amount)
             onResult(success)
         }
     }
-
-    // Demo flows purged to clean codebase.
 
     // --- PHYSICAL NFC AND QR CODE TRANSACTION CHANNELS ---
 
@@ -611,10 +682,93 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun startDemoFlow() {
+        demoJob?.cancel()
+        _demoActive.value = true
+        demoJob = viewModelScope.launch {
+            // STEP 1: Tap to Pay (Wait for tap)
+            _demoStep.value = 1
+            delay(2000)
+
+            // STEP 2: Card / ID Read (ID detected offline)
+            _demoStep.value = 2
+            delay(2000)
+
+            // STEP 3: Enter Amount
+            _demoStep.value = 3
+            delay(2000)
+
+            // STEP 4: PIN Verification
+            _demoStep.value = 4
+            delay(2500)
+
+            // Perform transaction in DB
+            val status = if (isOffline.value) "Pending" else "Synced"
+            repository.addTransaction(
+                title = "Musa Ibrahim (Demo)",
+                category = "food",
+                amount = 200.0,
+                isDebit = true,
+                status = status
+            )
+            repository.addTransaction(
+                title = "Payment from Joy (Demo)",
+                category = "food",
+                amount = 200.0,
+                isDebit = false,
+                status = status
+            )
+
+            // STEP 5: Payment Confirmed (Success Screen)
+            _demoStep.value = 5
+            delay(3500)
+
+            // Exit Demo
+            _demoActive.value = false
+        }
+    }
+
+    fun stopDemoFlow() {
+        demoJob?.cancel()
+        _demoActive.value = false
+    }
+
     fun syncAll() {
         viewModelScope.launch {
             repository.syncPending()
             refreshProfile()
+        }
+    }
+
+    fun getDevicePublicKeyBase64(): String {
+        return try {
+            val keyPair = repository.getDeviceKeyPair()
+            android.util.Base64.encodeToString(keyPair.public.encoded, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            "UNAVAILABLE"
+        }
+    }
+
+    fun isPhysicalNfcAvailable(): Boolean {
+        return repository.isNfcHardwareAvailable(getApplication())
+    }
+
+    fun isPhysicalNfcEnabled(): Boolean {
+        return repository.isNfcHardwareEnabled(getApplication())
+    }
+
+    fun getBiometricStatus(): String {
+        return try {
+            val biometricManager = androidx.biometric.BiometricManager.from(getApplication())
+            when (biometricManager.canAuthenticate(androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG or androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)) {
+                androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS -> "Hardware Active & Enrolled"
+                androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> "Hardware Not Found (Simulation Active)"
+                androidx.biometric.BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> "Hardware Busy/Unavailable"
+                androidx.biometric.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> "Hardware Present (No Fingerprints Enrolled)"
+                else -> "Biometrics Unsupported"
+            }
+        } catch (e: Exception) {
+            "Hardware Not Found (Simulation Active)"
         }
     }
 }

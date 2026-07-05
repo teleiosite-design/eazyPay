@@ -26,6 +26,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE nonce = :nonce LIMIT 1")
     suspend fun getTransactionByNonce(nonce: Int): TransactionEntity?
 
+    @Query("SELECT * FROM transactions ORDER BY id DESC LIMIT 1")
+    suspend fun getLastTransaction(): TransactionEntity?
+
     @Query("DELETE FROM transactions")
     suspend fun deleteAllTransactions()
 }

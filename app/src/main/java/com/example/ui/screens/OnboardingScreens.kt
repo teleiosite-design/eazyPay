@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.*
+import com.eazypay.app.BuildConfig
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -238,14 +239,16 @@ fun OnboardingScreen(
 // 3. REGISTER SCREEN
 @Composable
 fun RegisterScreen(
-    isLoading: Boolean,
-    errorMessage: String?,
-    onContinue: (name: String, phone: String, passwordPlain: String, role: String) -> Unit
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    onContinue: (name: String, phone: String, passwordPlain: String, role: String) -> Unit,
+    onWatchDemo: () -> Unit = {},
+    onQuickLogin: (role: String) -> Unit = {}
 ) {
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val defaultRole = if (com.example.BuildConfig.FLAVOR == "merchant") "vendor" else "customer"
+    val defaultRole = if (BuildConfig.FLAVOR == "merchant") "vendor" else "customer"
     var selectedRole by remember { mutableStateOf(defaultRole) }
 
     Scaffold(
@@ -273,7 +276,62 @@ fun RegisterScreen(
                     fontSize = 14.sp
                 )
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Role selector
+                Text(
+                    text = "SELECT YOUR APP PROFILE",
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Surface)
+                        .border(1.dp, Border, RoundedCornerShape(12.dp))
+                        .padding(4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (selectedRole == "customer" || selectedRole == "student") PrimaryTeal else Color.Transparent)
+                            .clickable { selectedRole = "customer" },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🎓 Customer",
+                            color = if (selectedRole == "customer" || selectedRole == "student") Background else TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (selectedRole == "vendor") PrimaryTeal else Color.Transparent)
+                            .clickable { selectedRole = "vendor" },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "🛺 Vendor / Driver",
+                            color = if (selectedRole == "vendor") Background else TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Name Input
                 Text(
@@ -368,6 +426,54 @@ fun RegisterScreen(
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Live demo payment button (Investor Wow factor!)
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Surface),
+                    border = BorderStroke(1.dp, PrimaryTeal.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 24.dp)
+                        .clickable { onWatchDemo() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(PrimaryTeal.copy(alpha = 0.15f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Play",
+                                tint = PrimaryTeal
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Synchronized Demo",
+                                color = TextPrimary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Watch the split-screen offline payment flow",
+                                color = TextSecondary,
+                                fontSize = 11.sp
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "Arrow",
+                            tint = TextSecondary
+                        )
+                    }
+                }
+
                 if (!errorMessage.isNullOrBlank()) {
                     Text(
                         text = errorMessage,
@@ -409,6 +515,22 @@ fun RegisterScreen(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedButton(
+                    onClick = { onQuickLogin(selectedRole) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, PrimaryTeal),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryTeal)
+                ) {
+                    Text(
+                        text = "⚡ Quick Bypass (Skip Registration)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
@@ -419,8 +541,8 @@ fun RegisterScreen(
 @Composable
 fun OtpScreen(
     phone: String,
-    isLoading: Boolean,
-    errorMessage: String?,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
     onVerified: (otp: String) -> Unit
 ) {
     var otpCode by remember { mutableStateOf("") }
@@ -539,8 +661,8 @@ fun OtpScreen(
 // 5. SET PIN SCREEN
 @Composable
 fun SetPinScreen(
-    isLoading: Boolean,
-    errorMessage: String?,
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
     onPinSet: (pin: String) -> Unit
 ) {
     var pin by remember { mutableStateOf("") }
