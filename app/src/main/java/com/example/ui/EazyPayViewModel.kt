@@ -313,6 +313,16 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
             )
             
             _terminalState.value = 4 // Success
+
+            // 3. Sync to backend if online, and refresh vendor earnings
+            if (!isOffline.value) {
+                try {
+                    repository.syncPending()
+                    refreshProfile()
+                } catch (e: Exception) {
+                    e.printStackTrace() // Non-fatal — local ledger already committed
+                }
+            }
         }
     }
 
@@ -526,10 +536,15 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
                     )
                     // Save details in repo
                     repository.updateCustomerDetails(response.name, "", response.phone, "", "")
+                    repository.updateCustomerBalance(response.balance)
                     repository.setRegistered(false, response.phone, "customer")
-                    // Save active ID
+                    // Save active customer ID (used by refreshProfile to fetch live data)
                     val prefs = getApplication<Application>().getSharedPreferences("eazypay_prefs", android.content.Context.MODE_PRIVATE)
-                    prefs.edit().putString("student_id", response.id).apply()
+                    prefs.edit()
+                        .putString("customer_id", response.id)
+                        .putString("customer_name", response.name)
+                        .putString("customer_phone", response.phone)
+                        .apply()
                 } else {
                     val response = EazyPayApiClient.apiService.registerMerchant(
                         RegisterMerchantRequest(name = name, phone = phone, password = passwordPlain)
@@ -540,6 +555,13 @@ class EazyPayViewModel(application: Application) : AndroidViewModel(application)
                         id = response.id
                     )
                     repository.setRegistered(false, response.phone, "vendor")
+                    // Persist vendor ID so refreshProfile can fetch live earnings
+                    val vPrefs = getApplication<Application>().getSharedPreferences("eazypay_prefs", android.content.Context.MODE_PRIVATE)
+                    vPrefs.edit()
+                        .putString("vendor_id", response.id)
+                        .putString("vendor_name", response.name)
+                        .putString("vendor_phone", response.phone)
+                        .apply()
                 }
                 _loading.value = false
                 onSuccess()
