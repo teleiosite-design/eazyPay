@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import net.sqlcipher.database.SupportFactory
-import net.sqlcipher.database.SQLiteDatabase
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import net.zetetic.database.sqlcipher.SQLiteDatabase
 
 @Database(entities = [TransactionEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -26,8 +26,8 @@ abstract class AppDatabase : RoomDatabase() {
 
                 try {
                     // Initialize SQLCipher native libraries
-                    SQLiteDatabase.loadLibs(context.applicationContext)
-                    val factory = SupportFactory(SQLiteDatabase.getBytes(PASSPHRASE))
+                    System.loadLibrary("sqlcipher")
+                    val factory = SupportOpenHelperFactory(PASSPHRASE.map { it.code.toByte() }.toByteArray())
                     builder.openHelperFactory(factory)
                 } catch (e: UnsatisfiedLinkError) {
                     android.util.Log.w("AppDatabase", "SQLCipher native libraries not found. Falling back to unencrypted SQLite helper.")
