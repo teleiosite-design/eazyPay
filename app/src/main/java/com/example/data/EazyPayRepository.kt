@@ -294,21 +294,27 @@ class EazyPayRepository(context: Context) {
             val formattedPhone = "+234 " + phone.removePrefix("+234").trim()
             if (role == "vendor") {
                 val currentVendor = _vendor.value
-                val newVendor = currentVendor.copy(id = "EP-V-" + phone.takeLast(4))
+                val existingId = prefs.getString("vendor_id", "") ?: ""
+                val newId = if (existingId.isNotEmpty() && !existingId.startsWith("EP-V-")) existingId else ("EP-V-" + phone.takeLast(4))
+                val newVendor = currentVendor.copy(id = newId)
                 _vendor.value = newVendor
-                editor.putString("vendor_id", newVendor.id)
+                editor.putString("vendor_id", newId)
             } else {
                 val currentCustomer = _customer.value
-                val newCustomer = currentCustomer.copy(phone = formattedPhone, id = "EP-" + phone.takeLast(4))
+                val existingCustomerId = prefs.getString("customer_id", "") ?: ""
+                val newCustomerId = if (existingCustomerId.isNotEmpty() && !existingCustomerId.startsWith("EP-")) existingCustomerId else ("EP-" + phone.takeLast(4))
+                val newCustomer = currentCustomer.copy(phone = formattedPhone, id = newCustomerId)
                 _customer.value = newCustomer
                 editor.putString("customer_phone", formattedPhone)
-                editor.putString("customer_id", newCustomer.id)
+                editor.putString("customer_id", newCustomerId)
 
                 val currentStudent = _student.value
-                val newStudent = currentStudent.copy(phone = formattedPhone, id = "EP-" + phone.takeLast(4))
+                val existingStudentId = prefs.getString("student_id", "") ?: ""
+                val newStudentId = if (existingStudentId.isNotEmpty() && !existingStudentId.startsWith("EP-")) existingStudentId else ("EP-" + phone.takeLast(4))
+                val newStudent = currentStudent.copy(phone = formattedPhone, id = newStudentId)
                 _student.value = newStudent
                 editor.putString("student_phone", formattedPhone)
-                editor.putString("student_id", newStudent.id)
+                editor.putString("student_id", newStudentId)
             }
         }
         editor.apply()
