@@ -149,6 +149,27 @@ fun EazyPayAppNavigator(viewModel: EazyPayViewModel) {
                         }
                     }
                 },
+                onLogin = { phone, passwordOrPin, role ->
+                    val forcedRole = if (BuildConfig.FLAVOR == "customer") {
+                        "customer"
+                    } else if (BuildConfig.FLAVOR == "merchant") {
+                        "vendor"
+                    } else {
+                        role
+                    }
+                    viewModel.loginOnline(phone, passwordOrPin, forcedRole) {
+                        if (forcedRole == "customer" || forcedRole == "student") {
+                            val route = if (forcedRole == "customer") "customer_main" else "student_main"
+                            navController.navigate(route) {
+                                popUpTo("register") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate("vendor_main") {
+                                popUpTo("register") { inclusive = true }
+                            }
+                        }
+                    }
+                },
                 onWatchDemo = {
                     navController.navigate("demo_split_screen")
                 },
