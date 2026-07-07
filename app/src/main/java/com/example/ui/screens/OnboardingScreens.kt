@@ -249,7 +249,7 @@ fun RegisterScreen(
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val defaultRole = if (BuildConfig.FLAVOR == "merchant") "vendor" else "customer"
-    var selectedRole by remember { mutableStateOf(defaultRole) }
+    val selectedRole = defaultRole
 
     Scaffold(
         containerColor = Background
@@ -278,60 +278,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Role selector
-                Text(
-                    text = "SELECT YOUR APP PROFILE",
-                    color = TextSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
                 Spacer(modifier = Modifier.height(8.dp))
-                
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Surface)
-                        .border(1.dp, Border, RoundedCornerShape(12.dp))
-                        .padding(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (selectedRole == "customer" || selectedRole == "student") PrimaryTeal else Color.Transparent)
-                            .clickable { selectedRole = "customer" },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🎓 Customer",
-                            color = if (selectedRole == "customer" || selectedRole == "student") Background else TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (selectedRole == "vendor") PrimaryTeal else Color.Transparent)
-                            .clickable { selectedRole = "vendor" },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🛺 Vendor / Driver",
-                            color = if (selectedRole == "vendor") Background else TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
 
                 // Name Input
                 Text(
