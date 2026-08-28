@@ -2,22 +2,21 @@ import { AuthService } from './auth.service';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
-    login(phone: string, passwordPlain: string): Promise<{
+    login(phone?: string, email?: string, passwordPlain?: string): Promise<{
         [x: string]: any;
         accessToken: string;
     }>;
-    sendOtp(phone: string, role: string): Promise<{
+    sendOtp(phone?: string, email?: string, targetInput?: string, role?: string): Promise<{
         success: boolean;
-        otpCode: string;
+        message?: string;
     }>;
-    verifyOtp(phone: string, otp: string, role: string): Promise<{
+    verifyOtp(phone?: string, email?: string, targetInput?: string, otp?: string, role?: string): Promise<{
         success: boolean;
     }>;
-    forgotPassword(phone: string, role: string): Promise<{
+    forgotPassword(phone?: string, email?: string, targetInput?: string, role?: string): Promise<{
         success: boolean;
-        otpCode: string;
     }>;
-    resetPassword(phone: string, otp: string, newPasswordPlain: string, role: string): Promise<{
+    resetPassword(phone?: string, email?: string, targetInput?: string, otp?: string, newPasswordPlain?: string, role?: string): Promise<{
         success: boolean;
     }>;
 }

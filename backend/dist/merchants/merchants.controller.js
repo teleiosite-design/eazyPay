@@ -19,8 +19,11 @@ let MerchantsController = class MerchantsController {
     constructor(merchantsService) {
         this.merchantsService = merchantsService;
     }
-    async register(name, phone, passwordPlain, initialBalance) {
-        return await this.merchantsService.register(name, phone, passwordPlain, initialBalance);
+    async register(name, phone, passwordPlain, initialBalance, email, cacNumber, idType, idNumber, nin, bvn, bankName, accountNumber) {
+        return await this.merchantsService.register(name, phone, passwordPlain, initialBalance, email, cacNumber, idType, idNumber, nin, bvn, bankName, accountNumber);
+    }
+    async verifyKyc(idType, idNumber, cacNumber, accountNumber) {
+        return await this.merchantsService.verifyKyc(idType, idNumber, cacNumber, accountNumber);
     }
     async findOne(id) {
         return await this.merchantsService.findOne(id);
@@ -39,10 +42,28 @@ __decorate([
     __param(1, (0, common_1.Body)('phone')),
     __param(2, (0, common_1.Body)('password')),
     __param(3, (0, common_1.Body)('initialBalance')),
+    __param(4, (0, common_1.Body)('email')),
+    __param(5, (0, common_1.Body)('cacNumber')),
+    __param(6, (0, common_1.Body)('idType')),
+    __param(7, (0, common_1.Body)('idNumber')),
+    __param(8, (0, common_1.Body)('nin')),
+    __param(9, (0, common_1.Body)('bvn')),
+    __param(10, (0, common_1.Body)('bankName')),
+    __param(11, (0, common_1.Body)('accountNumber')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Number]),
+    __metadata("design:paramtypes", [String, String, String, Number, String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], MerchantsController.prototype, "register", null);
+__decorate([
+    (0, common_1.Post)('verify-kyc'),
+    __param(0, (0, common_1.Body)('idType')),
+    __param(1, (0, common_1.Body)('idNumber')),
+    __param(2, (0, common_1.Body)('cacNumber')),
+    __param(3, (0, common_1.Body)('accountNumber')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], MerchantsController.prototype, "verifyKyc", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

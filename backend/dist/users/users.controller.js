@@ -20,8 +20,11 @@ let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
     }
-    async register(name, phone, publicKeyBase64, initialBalance) {
-        return await this.usersService.register(name, phone, publicKeyBase64, initialBalance);
+    async register(name, phone, publicKeyBase64, initialBalance, email, department, level, institutionId, memberId, idType, idNumber, nin, bvn) {
+        return await this.usersService.register(name, phone, publicKeyBase64, initialBalance, email, department, level, institutionId, memberId, idType, idNumber, nin, bvn);
+    }
+    async verifyKyc(idType, idNumber, fullName) {
+        return await this.usersService.verifyKyc(idType, idNumber, fullName);
     }
     async findOne(id) {
         return await this.usersService.findOne(id);
@@ -44,10 +47,28 @@ __decorate([
     __param(1, (0, common_1.Body)('phone')),
     __param(2, (0, common_1.Body)('publicKeyBase64')),
     __param(3, (0, common_1.Body)('initialBalance')),
+    __param(4, (0, common_1.Body)('email')),
+    __param(5, (0, common_1.Body)('department')),
+    __param(6, (0, common_1.Body)('level')),
+    __param(7, (0, common_1.Body)('institutionId')),
+    __param(8, (0, common_1.Body)('memberId')),
+    __param(9, (0, common_1.Body)('idType')),
+    __param(10, (0, common_1.Body)('idNumber')),
+    __param(11, (0, common_1.Body)('nin')),
+    __param(12, (0, common_1.Body)('bvn')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Number]),
+    __metadata("design:paramtypes", [String, String, String, Number, String, String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "register", null);
+__decorate([
+    (0, common_1.Post)('verify-kyc'),
+    __param(0, (0, common_1.Body)('idType')),
+    __param(1, (0, common_1.Body)('idNumber')),
+    __param(2, (0, common_1.Body)('fullName')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "verifyKyc", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

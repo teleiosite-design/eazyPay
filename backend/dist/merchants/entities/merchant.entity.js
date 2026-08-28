@@ -27,6 +27,42 @@ __decorate([
     __metadata("design:type", String)
 ], Merchant.prototype, "phone", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Merchant.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Merchant.prototype, "cacNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Merchant.prototype, "nin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Merchant.prototype, "bvn", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, default: 'nin' }),
+    __metadata("design:type", String)
+], Merchant.prototype, "idType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Merchant.prototype, "idNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, default: 'GTBank' }),
+    __metadata("design:type", String)
+], Merchant.prototype, "bankName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], Merchant.prototype, "accountNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', default: 'tier2' }),
+    __metadata("design:type", String)
+], Merchant.prototype, "kycTier", void 0);
+__decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Merchant.prototype, "passwordHash", void 0);
@@ -42,6 +78,10 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'boolean', default: false }),
     __metadata("design:type", Boolean)
 ], Merchant.prototype, "isPhoneVerified", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], Merchant.prototype, "isEmailVerified", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)

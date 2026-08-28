@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { Merchant } from '../merchants/entities/merchant.entity';
 
+import { EmailService } from './email.service';
+
 @Module({
   imports: [
     MerchantsModule,
@@ -20,7 +22,7 @@ import { Merchant } from '../merchants/entities/merchant.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService, PassportModule],
+  providers: [AuthService, JwtStrategy, EmailService],
+  exports: [AuthService, PassportModule, EmailService],
 })
 export class AuthModule {}

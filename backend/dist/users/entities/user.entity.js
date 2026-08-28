@@ -27,6 +27,46 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "phone", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "email", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "department", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "level", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, default: 'babcock.edu.ng' }),
+    __metadata("design:type", String)
+], User.prototype, "institutionId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "memberId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "nin", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "bvn", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true, default: 'nin' }),
+    __metadata("design:type", String)
+], User.prototype, "idType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], User.prototype, "idNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', default: 'tier1' }),
+    __metadata("design:type", String)
+], User.prototype, "kycTier", void 0);
+__decorate([
     (0, typeorm_1.Column)('double', { default: 0.0 }),
     __metadata("design:type", Number)
 ], User.prototype, "balance", void 0);
@@ -43,9 +83,9 @@ __decorate([
     __metadata("design:type", Boolean)
 ], User.prototype, "isPhoneVerified", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
-    __metadata("design:type", String)
-], User.prototype, "bvn", void 0);
+    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    __metadata("design:type", Boolean)
+], User.prototype, "isEmailVerified", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)

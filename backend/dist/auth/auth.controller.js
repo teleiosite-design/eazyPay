@@ -19,21 +19,26 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
-    async login(phone, passwordPlain) {
-        const validatedMerchant = await this.authService.validateMerchant(phone, passwordPlain);
+    async login(phone, email, passwordPlain) {
+        const identifier = email || phone || '';
+        const validatedMerchant = await this.authService.validateMerchant(identifier, passwordPlain || '');
         return await this.authService.login(validatedMerchant);
     }
-    async sendOtp(phone, role) {
-        return await this.authService.sendOtp(phone, role);
+    async sendOtp(phone, email, targetInput, role = 'customer') {
+        const target = email || targetInput || phone || '';
+        return await this.authService.sendOtp(target, role, email);
     }
-    async verifyOtp(phone, otp, role) {
-        return await this.authService.verifyOtp(phone, otp, role);
+    async verifyOtp(phone, email, targetInput, otp = '', role = 'customer') {
+        const target = email || targetInput || phone || '';
+        return await this.authService.verifyOtp(target, otp, role);
     }
-    async forgotPassword(phone, role) {
-        return await this.authService.forgotPassword(phone, role);
+    async forgotPassword(phone, email, targetInput, role = 'customer') {
+        const target = email || targetInput || phone || '';
+        return await this.authService.forgotPassword(target, role);
     }
-    async resetPassword(phone, otp, newPasswordPlain, role) {
-        return await this.authService.resetPassword(phone, otp, newPasswordPlain, role);
+    async resetPassword(phone, email, targetInput, otp = '', newPasswordPlain = '', role = 'customer') {
+        const target = email || targetInput || phone || '';
+        return await this.authService.resetPassword(target, otp, newPasswordPlain, role);
     }
 };
 exports.AuthController = AuthController;
@@ -41,48 +46,57 @@ __decorate([
     (0, common_1.Post)('login'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Body)('phone')),
-    __param(1, (0, common_1.Body)('password')),
+    __param(1, (0, common_1.Body)('email')),
+    __param(2, (0, common_1.Body)('password')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
     (0, common_1.Post)('send-otp'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Body)('phone')),
-    __param(1, (0, common_1.Body)('role')),
+    __param(1, (0, common_1.Body)('email')),
+    __param(2, (0, common_1.Body)('target')),
+    __param(3, (0, common_1.Body)('role')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "sendOtp", null);
 __decorate([
     (0, common_1.Post)('verify-otp'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Body)('phone')),
-    __param(1, (0, common_1.Body)('otp')),
-    __param(2, (0, common_1.Body)('role')),
+    __param(1, (0, common_1.Body)('email')),
+    __param(2, (0, common_1.Body)('target')),
+    __param(3, (0, common_1.Body)('otp')),
+    __param(4, (0, common_1.Body)('role')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "verifyOtp", null);
 __decorate([
     (0, common_1.Post)('forgot-password'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Body)('phone')),
-    __param(1, (0, common_1.Body)('role')),
+    __param(1, (0, common_1.Body)('email')),
+    __param(2, (0, common_1.Body)('target')),
+    __param(3, (0, common_1.Body)('role')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "forgotPassword", null);
 __decorate([
     (0, common_1.Post)('reset-password'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     __param(0, (0, common_1.Body)('phone')),
-    __param(1, (0, common_1.Body)('otp')),
-    __param(2, (0, common_1.Body)('newPassword')),
-    __param(3, (0, common_1.Body)('role')),
+    __param(1, (0, common_1.Body)('email')),
+    __param(2, (0, common_1.Body)('target')),
+    __param(3, (0, common_1.Body)('otp')),
+    __param(4, (0, common_1.Body)('newPassword')),
+    __param(5, (0, common_1.Body)('role')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "resetPassword", null);
 exports.AuthController = AuthController = __decorate([

@@ -18,6 +18,7 @@ const users_module_1 = require("./users/users.module");
 const merchants_module_1 = require("./merchants/merchants.module");
 const auth_module_1 = require("./auth/auth.module");
 const transactions_module_1 = require("./transactions/transactions.module");
+const banking_module_1 = require("./banking/banking.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -34,6 +35,7 @@ exports.AppModule = AppModule = __decorate([
             merchants_module_1.MerchantsModule,
             auth_module_1.AuthModule,
             transactions_module_1.TransactionsModule,
+            banking_module_1.BankingModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

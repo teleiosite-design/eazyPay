@@ -8,51 +8,68 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
-    @Body('phone') phone: string,
-    @Body('password') passwordPlain: string,
+    @Body('phone') phone?: string,
+    @Body('email') email?: string,
+    @Body('password') passwordPlain?: string,
   ) {
+    const identifier = email || phone || '';
     const validatedMerchant = await this.authService.validateMerchant(
-      phone,
-      passwordPlain,
+      identifier,
+      passwordPlain || '',
     );
     return await this.authService.login(validatedMerchant);
   }
 
   @Post('send-otp')
   @HttpCode(HttpStatus.OK)
-  async sendOtp(@Body('phone') phone: string, @Body('role') role: string) {
-    return await this.authService.sendOtp(phone, role);
+  async sendOtp(
+    @Body('phone') phone?: string,
+    @Body('email') email?: string,
+    @Body('target') targetInput?: string,
+    @Body('role') role: string = 'customer',
+  ) {
+    const target = email || targetInput || phone || '';
+    return await this.authService.sendOtp(target, role, email);
   }
 
   @Post('verify-otp')
   @HttpCode(HttpStatus.OK)
   async verifyOtp(
-    @Body('phone') phone: string,
-    @Body('otp') otp: string,
-    @Body('role') role: string,
+    @Body('phone') phone?: string,
+    @Body('email') email?: string,
+    @Body('target') targetInput?: string,
+    @Body('otp') otp: string = '',
+    @Body('role') role: string = 'customer',
   ) {
-    return await this.authService.verifyOtp(phone, otp, role);
+    const target = email || targetInput || phone || '';
+    return await this.authService.verifyOtp(target, otp, role);
   }
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(
-    @Body('phone') phone: string,
-    @Body('role') role: string,
+    @Body('phone') phone?: string,
+    @Body('email') email?: string,
+    @Body('target') targetInput?: string,
+    @Body('role') role: string = 'customer',
   ) {
-    return await this.authService.forgotPassword(phone, role);
+    const target = email || targetInput || phone || '';
+    return await this.authService.forgotPassword(target, role);
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(
-    @Body('phone') phone: string,
-    @Body('otp') otp: string,
-    @Body('newPassword') newPasswordPlain: string,
-    @Body('role') role: string,
+    @Body('phone') phone?: string,
+    @Body('email') email?: string,
+    @Body('target') targetInput?: string,
+    @Body('otp') otp: string = '',
+    @Body('newPassword') newPasswordPlain: string = '',
+    @Body('role') role: string = 'customer',
   ) {
+    const target = email || targetInput || phone || '';
     return await this.authService.resetPassword(
-      phone,
+      target,
       otp,
       newPasswordPlain,
       role,

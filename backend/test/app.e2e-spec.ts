@@ -4,9 +4,16 @@ import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../src/users/entities/user.entity';
+import { Merchant } from '../src/merchants/entities/merchant.entity';
 
 describe('EazyPay Backend Auth & Registration (e2e)', () => {
   let app: INestApplication;
+
+  let userRepo: Repository<User>;
+  let merchantRepo: Repository<Merchant>;
 
   beforeAll(async () => {
     const dbPath = path.join(process.cwd(), 'eazypay.sqlite');
@@ -24,6 +31,11 @@ describe('EazyPay Backend Auth & Registration (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    userRepo = moduleFixture.get<Repository<User>>(getRepositoryToken(User));
+    merchantRepo = moduleFixture.get<Repository<Merchant>>(
+      getRepositoryToken(Merchant),
+    );
   });
 
   afterAll(async () => {
@@ -66,49 +78,55 @@ describe('EazyPay Backend Auth & Registration (e2e)', () => {
   });
 
   describe('/auth/send-otp & /auth/verify-otp', () => {
-      let activeOtp = '';
-  
-      it('should generate and return a 6-digit OTP code for customer verification', () => {
-        return request(app.getHttpServer())
-          .post('/auth/send-otp')
-          .send({
-            phone: testUserPhone,
-            role: 'customer',
-          })
-          .expect(200)
-          .then((res) => {
-            expect(res.body.success).toBe(true);
-            expect(res.body.otpCode).toBeDefined();
-            expect(res.body.otpCode.length).toBe(6);
-            activeOtp = res.body.otpCode;
+    let activeOtp = '';
+
+    it('should generate and return a 6-digit OTP code for customer verification', () => {
+      return request(app.getHttpServer())
+        .post('/auth/send-otp')
+        .send({
+          phone: testUserPhone,
+          role: 'customer',
+        })
+        .expect(200)
+        .then(async (res) => {
+          expect(res.body.success).toBe(true);
+          expect(res.body.otpCode).toBeUndefined();
+          // Fetch OTP directly from DB for test assertion
+          const user = await userRepo.findOne({
+            where: { phone: testUserPhone },
           });
-      });
-  
-      it('should successfully verify the phone number with the correct OTP', () => {
-        return request(app.getHttpServer())
-          .post('/auth/verify-otp')
-          .send({
-            phone: testUserPhone,
-            otp: activeOtp,
-            role: 'customer',
-          })
-          .expect(200)
-          .then((res) => {
-            expect(res.body.success).toBe(true);
-          });
-      });
-  
-      it('should reject invalid or expired OTP codes', () => {
-        return request(app.getHttpServer())
-          .post('/auth/verify-otp')
-          .send({
-            phone: testUserPhone,
-            otp: '999999', // wrong OTP
-            role: 'customer',
-          })
-          .expect(400); // BadRequestException
-      });
+          expect(user).toBeDefined();
+          expect(user.otpCode).toBeDefined();
+          expect(user.otpCode.length).toBe(6);
+          activeOtp = user.otpCode;
+        });
     });
+
+    it('should successfully verify the phone number with the correct OTP', () => {
+      return request(app.getHttpServer())
+        .post('/auth/verify-otp')
+        .send({
+          phone: testUserPhone,
+          otp: activeOtp,
+          role: 'customer',
+        })
+        .expect(200)
+        .then((res) => {
+          expect(res.body.success).toBe(true);
+        });
+    });
+
+    it('should reject invalid or expired OTP codes', () => {
+      return request(app.getHttpServer())
+        .post('/auth/verify-otp')
+        .send({
+          phone: testUserPhone,
+          otp: '999999', // wrong OTP
+          role: 'customer',
+        })
+        .expect(400); // BadRequestException
+    });
+  });
 
   describe('/users/set-pin & /users/verify-pin', () => {
     it('should configure a 4-digit transaction PIN successfully', () => {
@@ -295,10 +313,17 @@ describe('EazyPay Backend Auth & Registration (e2e)', () => {
           role: 'merchant',
         })
         .expect(200)
-        .then((res) => {
+        .then(async (res) => {
           expect(res.body.success).toBe(true);
-          expect(res.body.otpCode).toBeDefined();
-          recoveryOtp = res.body.otpCode;
+          expect(res.body.otpCode).toBeUndefined();
+          // Fetch OTP from DB
+          const merchant = await merchantRepo.findOne({
+            where: { phone: testMerchantPhone },
+          });
+          expect(merchant).toBeDefined();
+          expect(merchant.otpCode).toBeDefined();
+          expect(merchant.otpCode.length).toBe(6);
+          recoveryOtp = merchant.otpCode;
         });
     });
 

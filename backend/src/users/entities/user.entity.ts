@@ -11,6 +11,36 @@ export class User {
   @Column({ unique: true })
   phone: string;
 
+  @Column({ type: 'text', nullable: true })
+  email: string;
+
+  @Column({ type: 'text', nullable: true })
+  department: string;
+
+  @Column({ type: 'text', nullable: true })
+  level: string;
+
+  @Column({ type: 'text', nullable: true, default: 'babcock.edu.ng' })
+  institutionId: string;
+
+  @Column({ type: 'text', nullable: true })
+  memberId: string;
+
+  @Column({ type: 'text', nullable: true })
+  nin: string;
+
+  @Column({ type: 'text', nullable: true })
+  bvn: string;
+
+  @Column({ type: 'text', nullable: true, default: 'nin' })
+  idType: string;
+
+  @Column({ type: 'text', nullable: true })
+  idNumber: string;
+
+  @Column({ type: 'text', default: 'tier1' })
+  kycTier: string;
+
   @Column('double', { default: 0.0 })
   balance: number;
 
@@ -23,8 +53,8 @@ export class User {
   @Column({ type: 'boolean', default: false })
   isPhoneVerified: boolean;
 
-  @Column({ type: 'text', nullable: true })
-  bvn: string;
+  @Column({ type: 'boolean', default: false })
+  isEmailVerified: boolean;
 
   @Column({ type: 'text', nullable: true })
   otpCode: string;
