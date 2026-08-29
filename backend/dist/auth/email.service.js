@@ -21,7 +21,7 @@ let EmailService = EmailService_1 = class EmailService {
         this.logger = new common_1.Logger(EmailService_1.name);
         this.resend = null;
         this.templateCache = new Map();
-        const apiKey = process.env.RESEND_API_KEY || 're_8zzsgErJ_JssxS7dmAgRWPSKP7ve3Tpfs';
+        const apiKey = process.env.RESEND_API_KEY;
         if (apiKey) {
             this.resend = new resend_1.Resend(apiKey);
         }

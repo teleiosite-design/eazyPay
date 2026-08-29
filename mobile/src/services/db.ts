@@ -157,32 +157,7 @@ export const DatabaseService = {
   },
 
   async seedInitialDataIfEmpty(): Promise<void> {
-    const list = await this.getAllTransactions();
-    if (list.length === 0) {
-      await this.insertTransaction({
-        title: 'Wallet Top-up',
-        category: 'topup',
-        timestamp: Date.now() - 7200000,
-        amount: 5000,
-        isDebit: false,
-        syncStatus: 'Synced',
-      });
-      await this.insertTransaction({
-        title: "Mama Tee's Kitchen",
-        category: 'food',
-        timestamp: Date.now() - 3600000,
-        amount: 650,
-        isDebit: true,
-        syncStatus: 'Synced',
-      });
-      await this.insertTransaction({
-        title: 'Campus Print Hub',
-        category: 'print',
-        timestamp: Date.now() - 1800000,
-        amount: 150,
-        isDebit: true,
-        syncStatus: 'Synced',
-      });
-    }
+    // No-op: Do not seed dummy transactions. Real transactions start empty.
+    return;
   },
 };

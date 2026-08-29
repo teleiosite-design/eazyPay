@@ -51,36 +51,47 @@ async function fetchJson<T>(endpoint: string, options: RequestInit = {}): Promis
 }
 
 export const ApiService = {
-  // Sterling Bank BaaS KYC Verification
+  // Provider-Agnostic Banking Gateway Endpoints
+  async getActiveBankingProvider(): Promise<{ provider: string; status: string }> {
+    return fetchJson<{ provider: string; status: string }>('/banking/active-provider');
+  },
+
+  async generateVirtualAccount(phone: string, name: string, email?: string, bvn?: string): Promise<SterlingVirtualAccountResponse> {
+    return fetchJson<SterlingVirtualAccountResponse>('/banking/virtual-account', {
+      method: 'POST',
+      body: JSON.stringify({ phone, name, email, bvn }),
+    });
+  },
+
+  async nameEnquiry(data: SterlingNameEnquiryRequest): Promise<SterlingNameEnquiryResponse> {
+    return fetchJson<SterlingNameEnquiryResponse>('/banking/name-enquiry', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async initiateBankTransfer(data: SterlingTransferRequest): Promise<SterlingTransferResponse> {
+    return fetchJson<SterlingTransferResponse>('/banking/transfer', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Backward-Compatible Aliases
   async verifySterlingKyc(data: SterlingKycRequest): Promise<SterlingKycResponse> {
-    return fetchJson<SterlingKycResponse>('/banking/sterling/kyc-verify', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.verifyKyc({ idType: data.idType, idNumber: data.idNumber, fullName: data.fullName });
   },
 
-  // Sterling Virtual Account Generation
   async generateSterlingVirtualAccount(phone: string, name: string, bvn?: string): Promise<SterlingVirtualAccountResponse> {
-    return fetchJson<SterlingVirtualAccountResponse>('/banking/sterling/virtual-account', {
-      method: 'POST',
-      body: JSON.stringify({ phone, name, bvn }),
-    });
+    return this.generateVirtualAccount(phone, name, undefined, bvn);
   },
 
-  // Sterling Inter-Bank NUBAN Name Enquiry
   async sterlingNameEnquiry(data: SterlingNameEnquiryRequest): Promise<SterlingNameEnquiryResponse> {
-    return fetchJson<SterlingNameEnquiryResponse>('/banking/sterling/name-enquiry', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.nameEnquiry(data);
   },
 
-  // Sterling NIP Bank Transfer / Settlement
   async initiateSterlingNipTransfer(data: SterlingTransferRequest): Promise<SterlingTransferResponse> {
-    return fetchJson<SterlingTransferResponse>('/banking/sterling/transfer', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.initiateBankTransfer(data);
   },
 
   // Standard EazyPay Wallet Endpoints

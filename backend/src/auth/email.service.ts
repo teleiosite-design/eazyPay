@@ -11,7 +11,7 @@ export class EmailService {
   private templateCache: Map<string, handlebars.TemplateDelegate> = new Map();
 
   constructor() {
-    const apiKey = process.env.RESEND_API_KEY || 're_8zzsgErJ_JssxS7dmAgRWPSKP7ve3Tpfs';
+    const apiKey = process.env.RESEND_API_KEY;
     if (apiKey) {
       this.resend = new Resend(apiKey);
     }

@@ -136,7 +136,7 @@ export interface SterlingKycRequest {
 export interface SterlingKycResponse {
   valid: boolean;
   message: string;
-  verifiedName: string;
+  verifiedName?: string;
   kycTier: string;
 }
 

@@ -89,52 +89,48 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const initialCustomer: CustomerUser = {
-  id: 'EP-0047',
-  name: 'Joy Adaeze',
-  phone: '+234 801 234 5678',
-  email: 'joy.adaeze@babcock.edu.ng',
-  department: 'Computer Science',
-  level: '400 Level',
-  balance: 4850,
+  id: '',
+  name: '',
+  phone: '',
+  email: '',
+  department: '',
+  level: '',
+  balance: 0,
 };
 
 const initialStudent: StudentUser = {
-  id: 'EP-0047',
-  name: 'Joy Adaeze',
-  phone: '+234 801 234 5678',
-  email: 'joy.adaeze@babcock.edu.ng',
-  department: 'Computer Science',
-  level: '400 Level',
-  balance: 4850,
+  id: '',
+  name: '',
+  phone: '',
+  email: '',
+  department: '',
+  level: '',
+  balance: 0,
 };
 
 const initialVendor: VendorUser = {
-  id: 'EP-V-8765',
-  name: "Mama Tee's Kitchen",
-  phone: '+234 809 876 5432',
-  todayEarnings: 14200,
-  bankName: 'GTBank',
-  accountNumber: '0123456789',
+  id: '',
+  name: '',
+  phone: '',
+  todayEarnings: 0,
+  bankName: '',
+  accountNumber: '',
 };
 
-const defaultOffers: Offer[] = [
-  { id: '1', title: "Mama Tee's Kitchen", subtitle: 'Get ₦50 back on 🍲 rice & swallow', category: 'food' },
-  { id: '2', title: 'Campus Print Hub', subtitle: '10 pages free on 🖨️ assignment prints', category: 'print' },
-  { id: '3', title: 'Flash Deal', subtitle: '2% airtime bonus 🛜 on instant top-up', category: 'topup' },
-];
+const defaultOffers: Offer[] = [];
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [currentRoute, setCurrentRoute] = useState<ScreenRoute>('splash');
   const [role, setRoleState] = useState<UserRole>('customer');
-  const [isRegistered, setIsRegistered] = useState<boolean>(true);
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [isOffline, setIsOffline] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [customer, setCustomer] = useState<CustomerUser>(initialCustomer);
   const [student, setStudent] = useState<StudentUser>(initialStudent);
   const [vendor, setVendor] = useState<VendorUser>(initialVendor);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [registeredCards, setRegisteredCards] = useState<string[]>(['Main Student ID Card', 'Backup Payment Sticker']);
+  const [registeredCards, setRegisteredCards] = useState<string[]>([]);
   const [pinHash, setPinHashState] = useState<string>('');
   const [pinBuffer, setPinBuffer] = useState<string>('');
   const [pinAttemptsRemaining, setPinAttemptsRemaining] = useState<number>(3);
@@ -429,13 +425,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const sendOtpOnline = async (target: string, rStr: string): Promise<boolean> => {
     setLoading(true);
+    setApiError(null);
     try {
       const isEmail = target.includes('@');
       const payload = isEmail ? { email: target, target, role: rStr } : { phone: target, target, role: rStr };
       const res = await ApiService.sendOtp(payload);
       return res.success;
-    } catch (_) {
-      return true;
+    } catch (e: any) {
+      setApiError(e.message || 'Failed to send OTP code.');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -443,6 +441,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const verifyOtpOnline = async (target: string, otp: string, rStr: string): Promise<boolean> => {
     setLoading(true);
+    setApiError(null);
     try {
       const isEmail = target.includes('@');
       const payload = isEmail ? { email: target, target, otp, role: rStr } : { phone: target, target, otp, role: rStr };
@@ -451,9 +450,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCurrentRoute('set_pin');
       }
       return res.success;
-    } catch (_) {
-      setCurrentRoute('set_pin');
-      return true;
+    } catch (e: any) {
+      setApiError(e.message || 'Invalid or expired OTP code.');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -461,6 +460,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setPinOnline = async (phone: string, pin: string, pass: string, rStr: string): Promise<boolean> => {
     setLoading(true);
+    setApiError(null);
     try {
       await setPin(pin);
       if (rStr === 'vendor') {
@@ -475,14 +475,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCurrentRoute('customer_main');
       }
       return true;
-    } catch (_) {
-      setIsRegistered(true);
-      if (rStr === 'vendor') {
-        setCurrentRoute('vendor_main');
-      } else {
-        setCurrentRoute('customer_main');
-      }
-      return true;
+    } catch (e: any) {
+      setApiError(e.message || 'Failed to configure transaction PIN.');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -574,12 +569,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const res = await ApiService.transferFunds('demo_token', { recipientPhone, amount, pin });
       if (res.success) {
-        topUpWallet(-amount);
+        setCustomer((prev) => ({ ...prev, balance: prev.balance - amount }));
+        setStudent((prev) => ({ ...prev, balance: prev.balance - amount }));
       }
       return res;
     } catch (e: any) {
-      topUpWallet(-amount);
-      return { success: true, message: 'Transfer completed successfully' };
+      return { success: false, message: e.message || 'Transfer failed. Check recipient, balance or PIN.' };
     } finally {
       setLoading(false);
     }
