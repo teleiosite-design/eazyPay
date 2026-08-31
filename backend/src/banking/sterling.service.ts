@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -66,7 +61,7 @@ export class SterlingService {
   async generateVirtualAccount(
     phone: string,
     name: string,
-    bvn?: string,
+    _bvn?: string,
   ): Promise<SterlingVirtualAccount> {
     this.logger.log(
       `[STERLING BANK VIRTUAL ACCOUNT] Issuing NUBAN for ${name} (${phone})`,
@@ -130,7 +125,7 @@ export class SterlingService {
     accountNumber: string,
     bankCode: string,
     amount: number,
-    narration: string,
+    _narration: string,
   ): Promise<{ success: boolean; reference: string; message: string }> {
     if (amount <= 0) {
       throw new BadRequestException('Transfer amount must be greater than 0.');
@@ -151,7 +146,7 @@ export class SterlingService {
   // 5. Sterling Bank Incoming Credit Webhook Listener
   async processWebhook(
     payload: any,
-    signature?: string,
+    _signature?: string,
   ): Promise<{ success: boolean; message: string }> {
     this.logger.log(
       `[STERLING BANK WEBHOOK] Received credit alert: ${JSON.stringify(payload)}`,
@@ -160,9 +155,6 @@ export class SterlingService {
     const accountNumber =
       payload.accountNumber || payload.destination_account_number;
     const amount = parseFloat(payload.amount || payload.transfer_amount || '0');
-    const senderName =
-      payload.senderName || payload.payer_name || 'External Bank Sender';
-
     if (!amount || amount <= 0) {
       return {
         success: false,

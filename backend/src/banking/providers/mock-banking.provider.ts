@@ -37,8 +37,8 @@ export class MockBankingProvider implements BankingProviderInterface {
   async createVirtualAccount(
     phone: string,
     name: string,
-    email?: string,
-    bvn?: string,
+    _email?: string,
+    _bvn?: string,
   ): Promise<VirtualAccountResult> {
     const cleanPhone = (phone || '').replace(/\D/g, '');
     const accountSuffix =
@@ -78,7 +78,7 @@ export class MockBankingProvider implements BankingProviderInterface {
     accountNumber: string,
     bankCode: string,
     amount: number,
-    narration: string,
+    _narration: string,
   ): Promise<TransferResult> {
     const reference = `EP-NIP-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     this.logger.log(
@@ -94,7 +94,7 @@ export class MockBankingProvider implements BankingProviderInterface {
 
   async processWebhook(
     payload: any,
-    signature?: string,
+    _signature?: string,
   ): Promise<{ success: boolean; message: string }> {
     this.logger.log(
       `[MOCK WEBHOOK] Processed inbound transfer event: ${JSON.stringify(payload)}`,

@@ -21,19 +21,19 @@ export declare class SterlingService {
         verifiedName: string;
         kycTier: string;
     }>;
-    generateVirtualAccount(phone: string, name: string, bvn?: string): Promise<SterlingVirtualAccount>;
+    generateVirtualAccount(phone: string, name: string, _bvn?: string): Promise<SterlingVirtualAccount>;
     performNameEnquiry(accountNumber: string, bankCode: string): Promise<{
         accountNumber: string;
         accountName: string;
         bankName: string;
         bankCode: string;
     }>;
-    initiateNipTransfer(accountNumber: string, bankCode: string, amount: number, narration: string): Promise<{
+    initiateNipTransfer(accountNumber: string, bankCode: string, amount: number, _narration: string): Promise<{
         success: boolean;
         reference: string;
         message: string;
     }>;
-    processWebhook(payload: any, signature?: string): Promise<{
+    processWebhook(payload: any, _signature?: string): Promise<{
         success: boolean;
         message: string;
     }>;

@@ -69,7 +69,7 @@ export class MerchantsService {
     idType: string,
     idNumber: string,
     cacNumber?: string,
-    accountNumber?: string,
+    _accountNumber?: string,
   ): Promise<{ valid: boolean; message: string; kycTier: string }> {
     if (cacNumber && cacNumber.trim().length > 0) {
       return {

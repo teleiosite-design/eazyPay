@@ -50,7 +50,7 @@ let MerchantsService = class MerchantsService {
         delete saved.passwordHash;
         return saved;
     }
-    async verifyKyc(idType, idNumber, cacNumber, accountNumber) {
+    async verifyKyc(idType, idNumber, cacNumber, _accountNumber) {
         if (cacNumber && cacNumber.trim().length > 0) {
             return {
                 valid: true,

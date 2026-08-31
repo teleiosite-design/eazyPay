@@ -40,7 +40,7 @@ let SterlingService = SterlingService_1 = class SterlingService {
             kycTier: 'tier2',
         };
     }
-    async generateVirtualAccount(phone, name, bvn) {
+    async generateVirtualAccount(phone, name, _bvn) {
         this.logger.log(`[STERLING BANK VIRTUAL ACCOUNT] Issuing NUBAN for ${name} (${phone})`);
         const numericPhone = phone.replace(/\D/g, '');
         const accountSuffix = numericPhone.slice(-8).padStart(8, '0');
@@ -54,7 +54,9 @@ let SterlingService = SterlingService_1 = class SterlingService {
         };
     }
     async performNameEnquiry(accountNumber, bankCode) {
-        if (!accountNumber || accountNumber.length !== 10 || isNaN(Number(accountNumber))) {
+        if (!accountNumber ||
+            accountNumber.length !== 10 ||
+            isNaN(Number(accountNumber))) {
             throw new common_1.BadRequestException('NUBAN account number must be exactly 10 digits.');
         }
         const bankMap = {
@@ -73,7 +75,7 @@ let SterlingService = SterlingService_1 = class SterlingService {
             bankCode,
         };
     }
-    async initiateNipTransfer(accountNumber, bankCode, amount, narration) {
+    async initiateNipTransfer(accountNumber, bankCode, amount, _narration) {
         if (amount <= 0) {
             throw new common_1.BadRequestException('Transfer amount must be greater than 0.');
         }
@@ -85,13 +87,15 @@ let SterlingService = SterlingService_1 = class SterlingService {
             message: `₦${amount.toFixed(2)} settled successfully via Sterling NIP Gateway. Ref: ${reference}`,
         };
     }
-    async processWebhook(payload, signature) {
+    async processWebhook(payload, _signature) {
         this.logger.log(`[STERLING BANK WEBHOOK] Received credit alert: ${JSON.stringify(payload)}`);
         const accountNumber = payload.accountNumber || payload.destination_account_number;
         const amount = parseFloat(payload.amount || payload.transfer_amount || '0');
-        const senderName = payload.senderName || payload.payer_name || 'External Bank Sender';
         if (!amount || amount <= 0) {
-            return { success: false, message: 'Invalid credit amount in webhook payload.' };
+            return {
+                success: false,
+                message: 'Invalid credit amount in webhook payload.',
+            };
         }
         const users = await this.userRepository.find();
         const matchedUser = users.find((u) => accountNumber && u.phone && accountNumber.endsWith(u.phone.slice(-8))) || users[0];
