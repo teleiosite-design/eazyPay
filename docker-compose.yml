@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./backend/.env
+    environment:
+      PORT: 3000
+      DATABASE_PATH: /app/data/eazypay.sqlite
+    volumes:
+      - eazypay-db:/app/data
+    restart: unless-stopped
+
+volumes:
+  eazypay-db:

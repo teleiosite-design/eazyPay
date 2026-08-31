@@ -7,16 +7,22 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.eazypay.mobile",
+      "infoPlist": {
+        "NFCReaderUsageDescription": "EazyPay uses NFC to read and write tap-to-pay transactions with vendor terminals."
+      }
     },
     "android": {
+      "package": "com.eazypay.mobile",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["NFC", "CAMERA"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -28,3 +34,4 @@
     ]
   }
 }
+
