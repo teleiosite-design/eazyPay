@@ -169,6 +169,76 @@ the current build.
 5. Run a limited, monitored pilot only after compliance, operational support,
    incident response, and reconciliation processes are proven.
 
+## Bluetooth and hotspot/Wi-Fi recommendation, in plain language
+
+**Do not use Bluetooth or a customer's personal hotspot as EazyPay's first or
+only way to approve a payment.** They can carry a payment message, but neither
+one proves who the customer is, which shop is being paid, what amount was agreed,
+or whether money is available. Think of them as roads that carry a signed note;
+they are not the signature, the shopkeeper's ID, or the bank checking the note.
+
+For normal online payments, the recommended first design is simpler: the merchant
+terminal uses its own managed internet connection (shop Wi-Fi, wired internet, or
+cellular) and the customer app uses its normal mobile data or Wi-Fi. Both talk to
+the EazyPay backend over HTTPS. The customer phone and terminal do not need to
+connect directly.
+
+If a later version truly needs a direct, short-range phone-to-terminal link, use
+**NFC to start the interaction and BLE for the small payment messages** before
+considering Wi-Fi Direct or a hotspot. Payment commands and receipts are tiny, so
+Wi-Fi's much higher speed gives little benefit. BLE is suited to a brief
+nearby-device exchange; Wi-Fi Direct is better kept for a proven large-data need,
+such as moving a software update.
+
+| Choice | What it is good for | Main problem for a payment | Recommendation |
+|---|---|---|---|
+| Merchant terminal internet | Sending the transaction to EazyPay's server | Needs coverage, but the server can settle immediately | **Use this first.** |
+| NFC + BLE | Intentional tap plus a small nearby message/receipt | Needs signed messages and replay protection; BLE can be relayed | **Use later, after the security foundation is complete.** |
+| Wi-Fi Direct | Fast direct transfer between nearby devices | More connection, permission, compatibility, and recovery complexity than tiny payment messages justify | Only consider for a proven large-data requirement. |
+| Customer personal hotspot | Giving another device general internet access | Customer passwords/data, privacy, battery, and reliability problems | **Do not use for payment approval.** |
+
+### Why a hotspot is not the safer answer
+
+1. **A hotspot is a road, not a security guard.** It gives a terminal a route to
+   the internet. It does not prove who owns the phone, which shop is being paid,
+   or that the amount is correct.
+2. **It asks customers to do too much.** They must turn on a hotspot, share a
+   password, wait for connection, and possibly spend their mobile data. That is
+   slow and frustrating at a checkout counter.
+3. **It creates new ways to fool people.** Someone can create a similar-looking
+   hotspot name and try to persuade a terminal or customer to join it. EazyPay
+   must never trust a network name as a merchant identity.
+4. **It may expose more than the payment.** A hotspot gives a connected terminal
+   general internet access through the customer's phone. EazyPay should not need
+   that broad access just to send one signed payment message.
+5. **It is less reliable in the real world.** Hotspots can turn off when a screen
+   locks, lose signal, hit data limits, or be blocked by phone settings. A
+   terminal should have its own managed connection and a clear offline mode.
+
+### Safe future use of BLE
+
+BLE can make the handoff convenient only after the core payment security exists:
+
+1. NFC or an explicit customer choice identifies the terminal; never trust the
+   first Bluetooth device or its displayed name.
+2. The terminal sends a short-lived, signed request containing its ID, amount,
+   transaction ID, random nonce, and expiry time.
+3. The customer sees the verified merchant and exact amount, then approves it.
+4. The phone signs the exact payment command with a non-exportable Android
+   Keystore or iOS Secure Enclave key.
+5. BLE carries the signed command; the backend checks key status, signature,
+   amount, balance, expiry, and that the nonce has never been used before.
+6. Both sides keep a signed receipt. An offline result remains **pending** until
+   the backend reconciles it.
+
+### A simple sentence for the technical meeting
+
+> “We should not choose Bluetooth or a hotspot as the thing that makes a payment
+> safe. For the first release, the terminal and app should each talk securely to
+> the EazyPay server. Later, NFC plus BLE can make the handoff convenient, while
+> signed payments, verified terminal identity, and backend checks make it safe.
+> We should not ask customers to share their hotspot.”
+
 ## Audit limitations
 
 This review did not exercise NFC hardware, a real email service, real bank
