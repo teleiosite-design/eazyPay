@@ -41,7 +41,12 @@ export class BankingController {
     @Body('email') email?: string,
     @Body('bvn') bvn?: string,
   ) {
-    return await this.bankingService.createVirtualAccount(phone, name, email, bvn);
+    return await this.bankingService.createVirtualAccount(
+      phone,
+      name,
+      email,
+      bvn,
+    );
   }
 
   @Post('name-enquiry')
@@ -51,7 +56,10 @@ export class BankingController {
     @Body('accountNumber') accountNumber: string,
     @Body('bankCode') bankCode: string,
   ) {
-    return await this.bankingService.performNameEnquiry(accountNumber, bankCode);
+    return await this.bankingService.performNameEnquiry(
+      accountNumber,
+      bankCode,
+    );
   }
 
   @Post('transfer')

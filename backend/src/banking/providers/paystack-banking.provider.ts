@@ -29,7 +29,9 @@ export class PaystackBankingProvider implements BankingProviderInterface {
     }
 
     if (!this.secretKey) {
-      this.logger.warn(`[PAYSTACK KYC] No Secret Key set. Fallback to mock KYC.`);
+      this.logger.warn(
+        `[PAYSTACK KYC] No Secret Key set. Fallback to mock KYC.`,
+      );
       return {
         valid: true,
         kycTier: 'tier2',
@@ -47,14 +49,14 @@ export class PaystackBankingProvider implements BankingProviderInterface {
         },
         body: JSON.stringify({ bvn: cleanId, account_number: cleanId }),
       });
-      const data = await response.json();
+      await response.json();
       return {
         valid: true,
         kycTier: 'tier2',
         verifiedName: fullName || 'Verified Paystack User',
         message: `${idType.toUpperCase()} verified via Paystack Identity API.`,
       };
-    } catch (e: any) {
+    } catch (_e: any) {
       return {
         valid: true,
         kycTier: 'tier2',
@@ -68,7 +70,7 @@ export class PaystackBankingProvider implements BankingProviderInterface {
     phone: string,
     name: string,
     email?: string,
-    bvn?: string,
+    _bvn?: string,
   ): Promise<VirtualAccountResult> {
     const customerEmail = email || `${phone.replace(/\D/g, '')}@babcock.edu.ng`;
 
@@ -125,7 +127,7 @@ export class PaystackBankingProvider implements BankingProviderInterface {
         currency: 'NGN',
         provider: 'paystack',
       };
-    } catch (e: any) {
+    } catch (_e: any) {
       const accountSuffix = phone.slice(-7);
       return {
         accountNumber: `99${accountSuffix}`,
@@ -174,7 +176,7 @@ export class PaystackBankingProvider implements BankingProviderInterface {
     accountNumber: string,
     bankCode: string,
     amount: number,
-    narration: string,
+    _narration: string,
   ): Promise<TransferResult> {
     const reference = `PS-TRANSFER-${Date.now()}`;
     return {
@@ -185,7 +187,10 @@ export class PaystackBankingProvider implements BankingProviderInterface {
     };
   }
 
-  async processWebhook(payload: any, signature?: string): Promise<{ success: boolean; message: string }> {
+  async processWebhook(
+    payload: any,
+    _signature?: string,
+  ): Promise<{ success: boolean; message: string }> {
     this.logger.log(`[PAYSTACK WEBHOOK] Event: ${payload?.event}`);
     return { success: true, message: 'Paystack webhook processed.' };
   }

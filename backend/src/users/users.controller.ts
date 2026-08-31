@@ -53,7 +53,12 @@ export class UsersController {
     @Body('idType') idType: string,
     @Body('idNumber') idNumber: string,
     @Body('fullName') fullName?: string,
-  ): Promise<{ valid: boolean; message: string; kycTier: string; verifiedName?: string }> {
+  ): Promise<{
+    valid: boolean;
+    message: string;
+    kycTier: string;
+    verifiedName?: string;
+  }> {
     return await this.usersService.verifyKyc(idType, idNumber, fullName);
   }
 

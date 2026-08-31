@@ -27,7 +27,7 @@ let MockBankingProvider = MockBankingProvider_1 = class MockBankingProvider {
             message: `${idType.toUpperCase()} (${cleanId}) verified successfully via NIBSS/NIMC Gateway (Mock Provider).`,
         };
     }
-    async createVirtualAccount(phone, name, email, bvn) {
+    async createVirtualAccount(phone, name, _email, _bvn) {
         const cleanPhone = (phone || '').replace(/\D/g, '');
         const accountSuffix = cleanPhone.length >= 7 ? cleanPhone.slice(-7) : '2837410';
         const accountNumber = `99${accountSuffix}`;
@@ -51,7 +51,7 @@ let MockBankingProvider = MockBankingProvider_1 = class MockBankingProvider {
             sessionRef: `MOCK-SESS-${Date.now()}`,
         };
     }
-    async initiateTransfer(accountNumber, bankCode, amount, narration) {
+    async initiateTransfer(accountNumber, bankCode, amount, _narration) {
         const reference = `EP-NIP-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         this.logger.log(`[MOCK NIP TRANSFER] Sent ₦${amount} to ${accountNumber} (Ref: ${reference})`);
         return {
@@ -61,9 +61,12 @@ let MockBankingProvider = MockBankingProvider_1 = class MockBankingProvider {
             message: `₦${amount} transferred successfully to account ${accountNumber}. (Mock Gateway)`,
         };
     }
-    async processWebhook(payload, signature) {
+    async processWebhook(payload, _signature) {
         this.logger.log(`[MOCK WEBHOOK] Processed inbound transfer event: ${JSON.stringify(payload)}`);
-        return { success: true, message: 'Mock deposit webhook received and processed.' };
+        return {
+            success: true,
+            message: 'Mock deposit webhook received and processed.',
+        };
     }
 };
 exports.MockBankingProvider = MockBankingProvider;

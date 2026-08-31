@@ -7,7 +7,7 @@ import { ThemeColors } from '../theme/colors';
 interface PinModalProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (pin: string) => void;
   title?: string;
 }
 
@@ -16,8 +16,9 @@ export const PinModal: React.FC<PinModalProps> = ({ visible, onClose, onSuccess,
   const styles = getStyles(colors);
 
   const handlePress = (num: string) => {
+    const enteredPin = pinBuffer + num;
     appendPinChar(num, () => {
-      onSuccess();
+      onSuccess(enteredPin);
       onClose();
     });
   };

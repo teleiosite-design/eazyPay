@@ -15,7 +15,7 @@ import { BankingModule } from './banking/banking.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
-      database: 'eazypay.sqlite',
+      database: process.env.DATABASE_PATH || 'eazypay.sqlite',
       entities: [User, Merchant, Transaction],
       synchronize: true, // Automatically synchronize table schemas (ideal for prototyping)
     }),

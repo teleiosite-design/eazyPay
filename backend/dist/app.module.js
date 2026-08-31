@@ -27,7 +27,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             typeorm_1.TypeOrmModule.forRoot({
                 type: 'better-sqlite3',
-                database: 'eazypay.sqlite',
+                database: process.env.DATABASE_PATH || 'eazypay.sqlite',
                 entities: [user_entity_1.User, merchant_entity_1.Merchant, transaction_entity_1.Transaction],
                 synchronize: true,
             }),

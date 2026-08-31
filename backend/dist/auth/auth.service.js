@@ -71,7 +71,11 @@ let AuthService = class AuthService {
         const otpCode = crypto.randomInt(100000, 999999).toString();
         const otpExpiry = new Date(Date.now() + 5 * 60000);
         const isEmail = target.includes('@') || (emailAddress && emailAddress.includes('@'));
-        const targetEmail = isEmail ? (target.includes('@') ? target : emailAddress) : emailAddress;
+        const targetEmail = isEmail
+            ? target.includes('@')
+                ? target
+                : emailAddress
+            : emailAddress;
         let userName = 'User';
         if (role === 'customer') {
             let user = await this.userRepository.findOne({

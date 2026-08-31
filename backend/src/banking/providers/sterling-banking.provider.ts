@@ -20,7 +20,11 @@ export class SterlingBankingProvider implements BankingProviderInterface {
     idType: 'bvn' | 'nin',
     fullName?: string,
   ): Promise<KycVerificationResult> {
-    const res = await this.sterlingService.verifyKycWithSterling(idNumber, idType, fullName);
+    const res = await this.sterlingService.verifyKycWithSterling(
+      idNumber,
+      idType,
+      fullName,
+    );
     return {
       valid: res.valid,
       kycTier: res.kycTier,
@@ -35,7 +39,11 @@ export class SterlingBankingProvider implements BankingProviderInterface {
     email?: string,
     bvn?: string,
   ): Promise<VirtualAccountResult> {
-    const res = await this.sterlingService.generateVirtualAccount(phone, name, bvn);
+    const res = await this.sterlingService.generateVirtualAccount(
+      phone,
+      name,
+      bvn,
+    );
     return {
       accountNumber: res.accountNumber,
       accountName: res.accountName,
@@ -50,7 +58,10 @@ export class SterlingBankingProvider implements BankingProviderInterface {
     accountNumber: string,
     bankCode: string,
   ): Promise<NameEnquiryResult> {
-    const res = await this.sterlingService.performNameEnquiry(accountNumber, bankCode);
+    const res = await this.sterlingService.performNameEnquiry(
+      accountNumber,
+      bankCode,
+    );
     return {
       accountNumber: res.accountNumber,
       accountName: res.accountName,
@@ -65,7 +76,12 @@ export class SterlingBankingProvider implements BankingProviderInterface {
     amount: number,
     narration: string,
   ): Promise<TransferResult> {
-    const res = await this.sterlingService.initiateNipTransfer(accountNumber, bankCode, amount, narration);
+    const res = await this.sterlingService.initiateNipTransfer(
+      accountNumber,
+      bankCode,
+      amount,
+      narration,
+    );
     return {
       success: res.success,
       reference: res.reference,
@@ -74,7 +90,10 @@ export class SterlingBankingProvider implements BankingProviderInterface {
     };
   }
 
-  async processWebhook(payload: any, signature?: string): Promise<{ success: boolean; message: string }> {
+  async processWebhook(
+    payload: any,
+    signature?: string,
+  ): Promise<{ success: boolean; message: string }> {
     return await this.sterlingService.processWebhook(payload, signature);
   }
 }

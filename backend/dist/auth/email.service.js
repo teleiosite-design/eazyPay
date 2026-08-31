@@ -65,10 +65,14 @@ let EmailService = EmailService_1 = class EmailService {
         const htmlContent = template({
             name,
             otpCode,
-            subject: isReset ? 'Reset Your EazyPay PIN / Password' : 'Your EazyPay Verification OTP Code',
+            subject: isReset
+                ? 'Reset Your EazyPay PIN / Password'
+                : 'Your EazyPay Verification OTP Code',
             year: new Date().getFullYear(),
         });
-        const subject = isReset ? `EazyPay Reset Code: ${otpCode}` : `Your EazyPay Verification Code: ${otpCode}`;
+        const subject = isReset
+            ? `EazyPay Reset Code: ${otpCode}`
+            : `Your EazyPay Verification Code: ${otpCode}`;
         this.logger.log(`[RESEND HBS EMAIL] Rendering ${templateName}.hbs for ${email}...`);
         if (this.resend) {
             try {

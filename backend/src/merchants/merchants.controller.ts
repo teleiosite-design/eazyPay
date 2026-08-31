@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Param,
-} from '@nestjs/common';
+import { Controller, Post, Get, Body, Param } from '@nestjs/common';
 import { MerchantsService } from './merchants.service';
 import { Merchant } from './entities/merchant.entity';
 
@@ -50,7 +44,12 @@ export class MerchantsController {
     @Body('cacNumber') cacNumber?: string,
     @Body('accountNumber') accountNumber?: string,
   ): Promise<{ valid: boolean; message: string; kycTier: string }> {
-    return await this.merchantsService.verifyKyc(idType, idNumber, cacNumber, accountNumber);
+    return await this.merchantsService.verifyKyc(
+      idType,
+      idNumber,
+      cacNumber,
+      accountNumber,
+    );
   }
 
   @Get(':id')

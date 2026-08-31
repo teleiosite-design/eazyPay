@@ -20,10 +20,12 @@ __decorate([
 ], Transaction.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Transaction.prototype, "customerId", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Transaction.prototype, "vendorId", void 0);
 __decorate([
@@ -36,6 +38,7 @@ __decorate([
 ], Transaction.prototype, "nonce", void 0);
 __decorate([
     (0, typeorm_1.Column)('bigint'),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", Number)
 ], Transaction.prototype, "timestamp", void 0);
 __decorate([
@@ -47,6 +50,7 @@ __decorate([
     __metadata("design:type", Date)
 ], Transaction.prototype, "syncedAt", void 0);
 exports.Transaction = Transaction = __decorate([
-    (0, typeorm_1.Entity)('transactions')
+    (0, typeorm_1.Entity)('transactions'),
+    (0, typeorm_1.Index)(['customerId', 'nonce'], { unique: true })
 ], Transaction);
 //# sourceMappingURL=transaction.entity.js.map

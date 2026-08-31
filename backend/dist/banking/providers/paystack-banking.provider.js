@@ -40,7 +40,7 @@ let PaystackBankingProvider = PaystackBankingProvider_1 = class PaystackBankingP
                 },
                 body: JSON.stringify({ bvn: cleanId, account_number: cleanId }),
             });
-            const data = await response.json();
+            await response.json();
             return {
                 valid: true,
                 kycTier: 'tier2',
@@ -48,7 +48,7 @@ let PaystackBankingProvider = PaystackBankingProvider_1 = class PaystackBankingP
                 message: `${idType.toUpperCase()} verified via Paystack Identity API.`,
             };
         }
-        catch (e) {
+        catch (_e) {
             return {
                 valid: true,
                 kycTier: 'tier2',
@@ -57,7 +57,7 @@ let PaystackBankingProvider = PaystackBankingProvider_1 = class PaystackBankingP
             };
         }
     }
-    async createVirtualAccount(phone, name, email, bvn) {
+    async createVirtualAccount(phone, name, email, _bvn) {
         const customerEmail = email || `${phone.replace(/\D/g, '')}@babcock.edu.ng`;
         if (!this.secretKey) {
             const accountSuffix = phone.slice(-7);
@@ -108,7 +108,7 @@ let PaystackBankingProvider = PaystackBankingProvider_1 = class PaystackBankingP
                 provider: 'paystack',
             };
         }
-        catch (e) {
+        catch (_e) {
             const accountSuffix = phone.slice(-7);
             return {
                 accountNumber: `99${accountSuffix}`,
@@ -145,7 +145,7 @@ let PaystackBankingProvider = PaystackBankingProvider_1 = class PaystackBankingP
             bankCode,
         };
     }
-    async initiateTransfer(accountNumber, bankCode, amount, narration) {
+    async initiateTransfer(accountNumber, bankCode, amount, _narration) {
         const reference = `PS-TRANSFER-${Date.now()}`;
         return {
             success: true,
@@ -154,7 +154,7 @@ let PaystackBankingProvider = PaystackBankingProvider_1 = class PaystackBankingP
             message: `₦${amount} transfer processed via Paystack.`,
         };
     }
-    async processWebhook(payload, signature) {
+    async processWebhook(payload, _signature) {
         this.logger.log(`[PAYSTACK WEBHOOK] Event: ${payload?.event}`);
         return { success: true, message: 'Paystack webhook processed.' };
     }

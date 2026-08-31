@@ -48,10 +48,10 @@ export const CustomerHomeScreen: React.FC = () => {
     }
   };
 
-  const handleTransferPinSuccess = async () => {
+  const handleTransferPinSuccess = async (pin: string) => {
     const amt = parseFloat(transferAmount);
     if (recipientPhone && !isNaN(amt)) {
-      await transferOnline(recipientPhone, amt, '1234');
+      await transferOnline(recipientPhone, amt, pin);
       setTransferModalVisible(false);
     }
   };

@@ -4,7 +4,7 @@ export declare class MerchantsService {
     private readonly merchantRepository;
     constructor(merchantRepository: Repository<Merchant>);
     register(name: string, phone: string, passwordPlain: string, initialBalance?: number, email?: string, cacNumber?: string, idType?: string, idNumber?: string, nin?: string, bvn?: string, bankName?: string, accountNumber?: string): Promise<Merchant>;
-    verifyKyc(idType: string, idNumber: string, cacNumber?: string, accountNumber?: string): Promise<{
+    verifyKyc(idType: string, idNumber: string, cacNumber?: string, _accountNumber?: string): Promise<{
         valid: boolean;
         message: string;
         kycTier: string;

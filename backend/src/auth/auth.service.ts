@@ -24,7 +24,10 @@ export class AuthService {
     private readonly emailService: EmailService,
   ) {}
 
-  async validateMerchant(identifier: string, passwordPlain: string): Promise<any> {
+  async validateMerchant(
+    identifier: string,
+    passwordPlain: string,
+  ): Promise<any> {
     const merchant = await this.merchantRepository.findOne({
       where: [{ phone: identifier }, { email: identifier }],
     });
@@ -81,8 +84,13 @@ export class AuthService {
     const otpCode = crypto.randomInt(100000, 999999).toString();
     const otpExpiry = new Date(Date.now() + 5 * 60000); // Valid for 5 minutes
 
-    const isEmail = target.includes('@') || (emailAddress && emailAddress.includes('@'));
-    const targetEmail = isEmail ? (target.includes('@') ? target : emailAddress) : emailAddress;
+    const isEmail =
+      target.includes('@') || (emailAddress && emailAddress.includes('@'));
+    const targetEmail = isEmail
+      ? target.includes('@')
+        ? target
+        : emailAddress
+      : emailAddress;
 
     let userName = 'User';
 

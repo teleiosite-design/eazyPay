@@ -57,5 +57,8 @@ export interface BankingProviderInterface {
     narration: string,
   ): Promise<TransferResult>;
 
-  processWebhook(payload: any, signature?: string): Promise<{ success: boolean; message: string }>;
+  processWebhook(
+    payload: any,
+    signature?: string,
+  ): Promise<{ success: boolean; message: string }>;
 }
