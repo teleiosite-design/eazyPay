@@ -12,6 +12,7 @@ import {
   TransferRequest,
   TransferResponse,
   SyncTransactionPayload,
+  SyncTransactionResult,
   VerifyKycRequest,
   VerifyKycResponse,
   SterlingVirtualAccountResponse,
@@ -187,8 +188,8 @@ export const ApiService = {
     });
   },
 
-  async syncTransactions(token: string, transactions: SyncTransactionPayload[]): Promise<{ success: boolean; message?: string }[]> {
-    return fetchJson<{ success: boolean; message?: string }[]>('/transactions/sync', {
+  async syncTransactions(token: string, transactions: SyncTransactionPayload[]): Promise<SyncTransactionResult[]> {
+    return fetchJson<SyncTransactionResult[]>('/transactions/sync', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

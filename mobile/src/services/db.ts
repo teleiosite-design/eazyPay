@@ -142,6 +142,32 @@ export const DatabaseService = {
     await db.runAsync("UPDATE transactions SET syncStatus = 'Synced' WHERE syncStatus = 'Pending'");
   },
 
+  /**
+   * Marks only the given nonces as 'Synced'. Any pending transaction whose
+   * nonce is not included (e.g. because the backend rejected it, or the
+   * batch request failed outright) is left as 'Pending' so it is retried on
+   * the next sync attempt instead of being silently discarded.
+   */
+  async markTransactionsSyncedByNonce(nonces: number[]): Promise<void> {
+    if (nonces.length === 0) return;
+    const db = await getDb();
+    const placeholders = nonces.map(() => '?').join(',');
+    await db.runAsync(
+      `UPDATE transactions SET syncStatus = 'Synced' WHERE syncStatus = 'Pending' AND nonce IN (${placeholders})`,
+      nonces,
+    );
+  },
+
+  async markTransactionsFailedByNonce(nonces: number[]): Promise<void> {
+    if (nonces.length === 0) return;
+    const db = await getDb();
+    const placeholders = nonces.map(() => '?').join(',');
+    await db.runAsync(
+      `UPDATE transactions SET syncStatus = 'Failed' WHERE syncStatus = 'Pending' AND nonce IN (${placeholders})`,
+      nonces,
+    );
+  },
+
   async verifyLedgerIntegrity(): Promise<boolean> {
     const list = (await this.getAllTransactions()).reverse();
     if (list.length === 0) return true;

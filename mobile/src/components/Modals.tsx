@@ -220,7 +220,7 @@ export const ChangePinModal: React.FC<{
   const handleSubmit = async () => {
     setError(null);
     const ok = await verifyPin(oldPin);
-    if (!ok && oldPin !== '1234') {
+    if (!ok) {
       setError('Current PIN is incorrect');
       return;
     }

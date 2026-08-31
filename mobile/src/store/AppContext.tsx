@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import {
   UserRole,
   ScreenRoute,
@@ -144,6 +145,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [disputedTransactions, setDisputedTransactions] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState<boolean>(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [authToken, setAuthTokenState] = useState<string | null>(null);
 
   // Compute active theme based on user preference and phone system settings
   const activeScheme: 'light' | 'dark' =
@@ -175,6 +177,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const AUTH_TOKEN_KEY = 'eazypay_auth_token';
+  const PIN_HASH_KEY = 'eazypay_pin_hash';
+
+  const persistAuthToken = async (token: string | null) => {
+    setAuthTokenState(token);
+    try {
+      if (token) {
+        await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
+      } else {
+        await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+      }
+    } catch (e) {
+      // SecureStore may be unavailable in some environments (e.g. web); token
+      // still remains usable for the current session via in-memory state.
+    }
+  };
+
   const loadTransactions = async () => {
     await DatabaseService.seedInitialDataIfEmpty();
     const list = await DatabaseService.getAllTransactions();
@@ -187,7 +206,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     loadTransactions();
-    CryptoService.hashPin('1234').then(setPinHashState);
+    SecureStore.getItemAsync(AUTH_TOKEN_KEY)
+      .then((token) => {
+        if (token) setAuthTokenState(token);
+      })
+      .catch(() => {});
+    SecureStore.getItemAsync(PIN_HASH_KEY)
+      .then((hash) => {
+        if (hash) setPinHashState(hash);
+      })
+      .catch(() => {});
   }, []);
 
   const toggleOffline = () => {
@@ -201,6 +229,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const setPin = async (pin: string) => {
     const hash = await CryptoService.hashPin(pin);
     setPinHashState(hash);
+    try {
+      await SecureStore.setItemAsync(PIN_HASH_KEY, hash);
+    } catch (e) {
+      // Persisting the PIN hash is best-effort; the hash still lives in
+      // memory for the current session if SecureStore is unavailable.
+    }
   };
 
   const verifyPin = async (pin: string): Promise<boolean> => {
@@ -214,7 +248,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setPinBuffer(next);
       if (next.length === 4) {
         verifyPin(next).then((match) => {
-          if (match || next === '1234') {
+          if (match) {
             setPinAttemptsRemaining(3);
             setPinBuffer('');
             onSuccess();
@@ -322,13 +356,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           timestamp: p.timestamp || Date.now(),
           signature: p.signature,
         }));
-        await ApiService.syncTransactions('demo_token', payloads);
-        await DatabaseService.markPendingAsSynced();
+        const results = await ApiService.syncTransactions(authToken || '', payloads);
+        const succeededNonces = results
+          .filter((r) => r.status === 'SUCCESS')
+          .map((r) => r.nonce);
+        const failedNonces = results
+          .filter((r) => r.status === 'FAILED')
+          .map((r) => r.nonce);
+        await DatabaseService.markTransactionsSyncedByNonce(succeededNonces);
+        await DatabaseService.markTransactionsFailedByNonce(failedNonces);
         await loadTransactions();
       }
     } catch (e) {
-      await DatabaseService.markPendingAsSynced();
-      await loadTransactions();
+      // Network/server failure: leave pending transactions untouched so they
+      // are retried automatically on the next successful sync attempt.
+      setApiError('Unable to sync offline transactions. Will retry when back online.');
     } finally {
       setIsSyncing(false);
     }
@@ -488,6 +530,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setApiError(null);
     try {
       const res = await ApiService.login(identifier, pass);
+      if (res.accessToken) {
+        await persistAuthToken(res.accessToken);
+      }
       if (res.merchant) {
         setVendor((prev) => ({
           ...prev,
@@ -567,7 +612,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const transferOnline = async (recipientPhone: string, amount: number, pin: string): Promise<{ success: boolean; message: string }> => {
     setLoading(true);
     try {
-      const res = await ApiService.transferFunds('demo_token', { recipientPhone, amount, pin });
+      if (!authToken) {
+        return { success: false, message: 'You must be logged in to transfer funds.' };
+      }
+      const res = await ApiService.transferFunds(authToken, { recipientPhone, amount, pin });
       if (res.success) {
         setCustomer((prev) => ({ ...prev, balance: prev.balance - amount }));
         setStudent((prev) => ({ ...prev, balance: prev.balance - amount }));

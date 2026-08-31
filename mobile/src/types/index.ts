@@ -270,3 +270,11 @@ export interface SyncTransactionPayload {
   timestamp: number;
   signature: string;
 }
+
+export interface SyncTransactionResult {
+  customerId: string;
+  nonce: number;
+  status: 'SUCCESS' | 'FAILED';
+  id?: string;
+  reason?: string;
+}
