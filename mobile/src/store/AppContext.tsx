@@ -17,6 +17,10 @@ import { ApiService } from '../services/api';
 import { CryptoService } from '../services/crypto';
 import { darkTheme, lightTheme, ThemeColors } from '../theme/colors';
 
+const AUTH_TOKEN_KEY = 'eazypay_auth_token';
+const PIN_HASH_KEY = 'eazypay_pin_hash';
+
+
 interface AppContextType {
   currentRoute: ScreenRoute;
   navigateTo: (route: ScreenRoute) => void;
@@ -176,9 +180,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentRoute('customer_main');
     }
   };
-
-  const AUTH_TOKEN_KEY = 'eazypay_auth_token';
-  const PIN_HASH_KEY = 'eazypay_pin_hash';
 
   const persistAuthToken = async (token: string | null) => {
     setAuthTokenState(token);
