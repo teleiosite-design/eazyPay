@@ -38,7 +38,9 @@ export class EmailService {
     }
 
     if (!source) {
-      this.logger.warn(`[HBS WARNING] Template ${templateName}.hbs not found. Using fallback layout.`);
+      this.logger.warn(
+        `[HBS WARNING] Template ${templateName}.hbs not found. Using fallback layout.`,
+      );
       source = `
         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #0B0F19; color: #F8FAFC;">
           <h2 style="color: #00F2FE;">⚡ EAZYPAY Verification</h2>
@@ -54,7 +56,12 @@ export class EmailService {
     return compiled;
   }
 
-  async sendOtpEmail(email: string, otpCode: string, name: string = 'User', isReset: boolean = false): Promise<boolean> {
+  async sendOtpEmail(
+    email: string,
+    otpCode: string,
+    name: string = 'User',
+    isReset: boolean = false,
+  ): Promise<boolean> {
     const sender = process.env.SENDER_EMAIL || 'onboarding@resend.dev';
     const templateName = isReset ? 'password-reset' : 'otp';
     const template = this.getTemplate(templateName);
@@ -62,13 +69,19 @@ export class EmailService {
     const htmlContent = template({
       name,
       otpCode,
-      subject: isReset ? 'Reset Your EazyPay PIN / Password' : 'Your EazyPay Verification OTP Code',
+      subject: isReset
+        ? 'Reset Your EazyPay PIN / Password'
+        : 'Your EazyPay Verification OTP Code',
       year: new Date().getFullYear(),
     });
 
-    const subject = isReset ? `EazyPay Reset Code: ${otpCode}` : `Your EazyPay Verification Code: ${otpCode}`;
+    const subject = isReset
+      ? `EazyPay Reset Code: ${otpCode}`
+      : `Your EazyPay Verification Code: ${otpCode}`;
 
-    this.logger.log(`[RESEND HBS EMAIL] Rendering ${templateName}.hbs for ${email}...`);
+    this.logger.log(
+      `[RESEND HBS EMAIL] Rendering ${templateName}.hbs for ${email}...`,
+    );
 
     if (this.resend) {
       try {
@@ -78,10 +91,15 @@ export class EmailService {
           subject,
           html: htmlContent,
         });
-        this.logger.log(`[RESEND SUCCESS] Sent ${templateName}.hbs email to ${email}, id: ${data.data?.id}`);
+        this.logger.log(
+          `[RESEND SUCCESS] Sent ${templateName}.hbs email to ${email}, id: ${data.data?.id}`,
+        );
         return true;
       } catch (error) {
-        this.logger.error(`[RESEND ERROR] Failed to send email to ${email}:`, error);
+        this.logger.error(
+          `[RESEND ERROR] Failed to send email to ${email}:`,
+          error,
+        );
         return false;
       }
     } else {

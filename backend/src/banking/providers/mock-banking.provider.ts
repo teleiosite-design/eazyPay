@@ -23,7 +23,9 @@ export class MockBankingProvider implements BankingProviderInterface {
         `${idType.toUpperCase()} must be exactly 11 numeric digits under CBN regulations.`,
       );
     }
-    this.logger.log(`[MOCK KYC] Verified ${idType.toUpperCase()}: ${cleanId} for ${fullName || 'User'}`);
+    this.logger.log(
+      `[MOCK KYC] Verified ${idType.toUpperCase()}: ${cleanId} for ${fullName || 'User'}`,
+    );
     return {
       valid: true,
       kycTier: 'tier2',
@@ -39,10 +41,13 @@ export class MockBankingProvider implements BankingProviderInterface {
     bvn?: string,
   ): Promise<VirtualAccountResult> {
     const cleanPhone = (phone || '').replace(/\D/g, '');
-    const accountSuffix = cleanPhone.length >= 7 ? cleanPhone.slice(-7) : '2837410';
+    const accountSuffix =
+      cleanPhone.length >= 7 ? cleanPhone.slice(-7) : '2837410';
     const accountNumber = `99${accountSuffix}`;
 
-    this.logger.log(`[MOCK DVA] Generated Virtual NUBAN ${accountNumber} for ${name}`);
+    this.logger.log(
+      `[MOCK DVA] Generated Virtual NUBAN ${accountNumber} for ${name}`,
+    );
     return {
       accountNumber,
       accountName: `EazyPay / ${name}`,
@@ -57,7 +62,9 @@ export class MockBankingProvider implements BankingProviderInterface {
     accountNumber: string,
     bankCode: string,
   ): Promise<NameEnquiryResult> {
-    this.logger.log(`[MOCK NUBAN ENQUIRY] Checking ${accountNumber} at Bank Code ${bankCode}`);
+    this.logger.log(
+      `[MOCK NUBAN ENQUIRY] Checking ${accountNumber} at Bank Code ${bankCode}`,
+    );
     return {
       accountNumber,
       accountName: 'Babcock Merchant Vendor',
@@ -74,7 +81,9 @@ export class MockBankingProvider implements BankingProviderInterface {
     narration: string,
   ): Promise<TransferResult> {
     const reference = `EP-NIP-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-    this.logger.log(`[MOCK NIP TRANSFER] Sent ₦${amount} to ${accountNumber} (Ref: ${reference})`);
+    this.logger.log(
+      `[MOCK NIP TRANSFER] Sent ₦${amount} to ${accountNumber} (Ref: ${reference})`,
+    );
     return {
       success: true,
       reference,
@@ -83,8 +92,16 @@ export class MockBankingProvider implements BankingProviderInterface {
     };
   }
 
-  async processWebhook(payload: any, signature?: string): Promise<{ success: boolean; message: string }> {
-    this.logger.log(`[MOCK WEBHOOK] Processed inbound transfer event: ${JSON.stringify(payload)}`);
-    return { success: true, message: 'Mock deposit webhook received and processed.' };
+  async processWebhook(
+    payload: any,
+    signature?: string,
+  ): Promise<{ success: boolean; message: string }> {
+    this.logger.log(
+      `[MOCK WEBHOOK] Processed inbound transfer event: ${JSON.stringify(payload)}`,
+    );
+    return {
+      success: true,
+      message: 'Mock deposit webhook received and processed.',
+    };
   }
 }

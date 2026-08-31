@@ -40,7 +40,8 @@ export class UsersService {
     }
 
     // Determine KYC Tier (Tier 2 if NIN or BVN provided, else Tier 1)
-    const kycTier = nin || bvn || (idType !== 'campus_id' && idNumber) ? 'tier2' : 'tier1';
+    const kycTier =
+      nin || bvn || (idType !== 'campus_id' && idNumber) ? 'tier2' : 'tier1';
 
     const user = this.userRepository.create({
       name,
@@ -66,15 +67,24 @@ export class UsersService {
     idType: string,
     idNumber: string,
     fullName?: string,
-  ): Promise<{ valid: boolean; message: string; kycTier: string; verifiedName?: string }> {
+  ): Promise<{
+    valid: boolean;
+    message: string;
+    kycTier: string;
+    verifiedName?: string;
+  }> {
     if (!idNumber || idNumber.trim().length === 0) {
-      throw new BadRequestException('ID number is required for KYC verification.');
+      throw new BadRequestException(
+        'ID number is required for KYC verification.',
+      );
     }
 
     if (idType === 'nin' || idType === 'bvn') {
       const clean = idNumber.replace(/\D/g, '');
       if (clean.length !== 11) {
-        throw new BadRequestException(`${idType.toUpperCase()} must be exactly 11 digits under CBN regulations.`);
+        throw new BadRequestException(
+          `${idType.toUpperCase()} must be exactly 11 digits under CBN regulations.`,
+        );
       }
       return {
         valid: true,

@@ -29,7 +29,9 @@ export class PaystackBankingProvider implements BankingProviderInterface {
     }
 
     if (!this.secretKey) {
-      this.logger.warn(`[PAYSTACK KYC] No Secret Key set. Fallback to mock KYC.`);
+      this.logger.warn(
+        `[PAYSTACK KYC] No Secret Key set. Fallback to mock KYC.`,
+      );
       return {
         valid: true,
         kycTier: 'tier2',
@@ -185,7 +187,10 @@ export class PaystackBankingProvider implements BankingProviderInterface {
     };
   }
 
-  async processWebhook(payload: any, signature?: string): Promise<{ success: boolean; message: string }> {
+  async processWebhook(
+    payload: any,
+    signature?: string,
+  ): Promise<{ success: boolean; message: string }> {
     this.logger.log(`[PAYSTACK WEBHOOK] Event: ${payload?.event}`);
     return { success: true, message: 'Paystack webhook processed.' };
   }
