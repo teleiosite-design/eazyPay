@@ -3,17 +3,21 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('transactions')
+@Index(['customerId', 'nonce'], { unique: true })
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
+  @Index()
   customerId: string;
 
   @Column()
+  @Index()
   vendorId: string;
 
   @Column('double')
@@ -23,6 +27,7 @@ export class Transaction {
   nonce: number;
 
   @Column('bigint')
+  @Index()
   timestamp: number;
 
   @Column({ type: 'text' })
